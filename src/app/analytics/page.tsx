@@ -32,19 +32,19 @@ export default function AnalyticsPage() {
             <div style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid #f1f5f9' }}>
               <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Sales Conversion Rate</div>
               <div style={{ fontSize: '32px', fontWeight: 800, color: '#5d5fef', marginTop: '8px' }}>68.4%</div>
-              <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px', fontWeight: 700 }}>+4.2% dibanding bulan lalu</div>
+              <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px', fontWeight: 700 }}>+4.2% vs last month</div>
             </div>
 
             <div style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid #f1f5f9' }}>
               <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Customer Retention Index</div>
               <div style={{ fontSize: '32px', fontWeight: 800, color: '#22c55e', marginTop: '8px' }}>92.1%</div>
-              <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px', fontWeight: 700 }}>+1.8% dibanding bulan lalu</div>
+              <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px', fontWeight: 700 }}>+1.8% vs last month</div>
             </div>
 
             <div style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid #f1f5f9' }}>
               <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Average Lead Response Time</div>
-              <div style={{ fontSize: '32px', fontWeight: 800, color: '#06b6d4', marginTop: '8px' }}>14 Menit</div>
-              <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px', fontWeight: 700 }}>3x Lebih cepat</div>
+              <div style={{ fontSize: '32px', fontWeight: 800, color: '#06b6d4', marginTop: '8px' }}>14 Mins</div>
+              <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px', fontWeight: 700 }}>3x Faster</div>
             </div>
           </div>
         </main>
