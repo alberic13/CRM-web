@@ -1,0 +1,236 @@
+.sidebar {
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  padding: 24px 14px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.02);
+
+  /* Firefox Custom Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #c7d2fe transparent;
+}
+
+/* Webkit (Chrome, Edge, Safari) Custom UI Theme Scrollbar */
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #5d5fef;
+}
+
+.sidebar::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  margin-bottom: 24px;
+  text-decoration: none;
+}
+
+.brandName {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.4px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: #8b5cf6;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.navItemContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+}
+
+.navItem:hover {
+  background-color: #f5f3ff;
+  color: #6d28d9;
+}
+
+.activeNavItem {
+  background-color: #f0f1ff;
+  color: #5d5fef;
+}
+
+.activeNavItem .navItemIcon {
+  color: #5d5fef;
+}
+
+.activeIndicator {
+  position: absolute;
+  right: -14px;
+  top: 6px;
+  bottom: 6px;
+  width: 3.5px;
+  background-color: #5d5fef;
+  border-radius: 3px 0 0 3px;
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+  color: #c4b5fd;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+  color: #5d5fef;
+}
+
+.subMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 36px;
+  margin-top: 4px;
+}
+
+.subNavItem {
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subNavItem:hover {
+  color: #5d5fef;
+  background-color: #f5f3ff;
+}
+
+.activeSubNavItem {
+  color: #5d5fef;
+  font-weight: 800;
+  background-color: #f0f1ff;
+}
+
+.bottomSection {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.moreServiceBtn {
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+  letter-spacing: 0.3px;
+}
+
+.starBurstIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Bottom Help Desk Card */
+.helpDeskCard {
+  background: #f8f9fe;
+  border-radius: 18px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #f1f3fe;
+}
+
+.illustrationArea {
+  width: 100%;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.helpDeskBtn {
+  width: 80%;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  letter-spacing: 0.5px;
+  text-align: center;
+}

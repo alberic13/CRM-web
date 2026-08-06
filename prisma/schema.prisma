@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  AGENT
+}
+
+enum CustomerStatus {
+  Loyal
+  New
+  Lost
+}
+
+enum OpportunityStatus {
+  Pending
+  Won
+  InProgress
+  Lost
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(ADMIN)
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id           String         @id @default(uuid())
+  customerNo   String         @unique
+  name         String
+  email        String
+  phone        String?
+  region       String
+  source       String
+  status       CustomerStatus @default(New)
+  lastPurchase DateTime       @default(now())
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Opportunity {
+  id            String            @id @default(uuid())
+  opportunityNo String            @unique
+  name          String
+  status        OpportunityStatus @default(Pending)
+  revenue       Float
+  expCloseDate  DateTime
+  customerName  String
+  ownerName     String
+  creationDate  DateTime          @default(now())
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model SalesTeamMember {
+  id             String  @id @default(uuid())
+  name           String
+  avatar         String?
+  revenue        Float
+  orders         Int
+  conversionRate Float
+}
+
+model TaskCompletion {
+  id          String  @id @default(uuid())
+  companyName String
+  avatar      String?
+  completed   Int
+  inProgress  Int
+}
+
+model MetricSummary {
+  id                   String   @id @default(uuid())
+  totalRevenue         Float
+  totalRevenueInc      Float
+  totalQuantity        Int
+  totalQuantityInc     Float
+  numberOrders         Int
+  numberOrdersInc      Float
+  averageOrderValue    Float
+  averageOrderValueInc Float
+  customerCount        Int
+  customerCountInc     Float
+  updatedAt            DateTime @updatedAt
+}
+
+model MarketingDemographic {
+  id         String @id @default(uuid())
+  ageGroup   String // e.g. "21-30", "31-40", "41-50"
+  percentage Float
+  count      Int
+}
+
+model ProductPreference {
+  id               String @id @default(uuid())
+  rank             Int
+  productName      String
+  purchaseQuantity Int
+}
