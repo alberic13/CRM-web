@@ -21,14 +21,20 @@ Document ini berfungsi sebagai **Memory & Context File** permanen untuk AI assis
 
 ---
 
-## 3. Struktur Fitur & Halaman
+## 3. Aturan Git & Push (Strict Rule)
+
+> **DO NOT AUTO GIT PUSH**: Jangan melakukan `git push` secara otomatis setelah menyelesaikan tugas/prompt. Hanya lakukan `git push` ketika USER secara eksplisit meminta untuk *push ke github*.
+
+---
+
+## 4. Struktur Fitur & Halaman
 
 ### 📁 `src/app/dashboard/`
-- **Dashboard Preview**: Dikembalikan 100% persis ke tampilan awal (5 KPI Metrics, Overall Revenue Trends, Sales Channel Distribution, Revenue Target, Revenue Trend dengan toggle Daily/Weekly/Monthly, serta Tabel Sales Team & Task Completion dengan Foto Orang Asli).
+- **Dashboard Preview**: Tampilan 5 KPI Metrics, Overall Revenue Trends, Sales Channel Distribution, Revenue Target, Revenue Trend dengan toggle Daily/Weekly/Monthly, serta Tabel Sales Team & Task Completion dengan Foto Orang Asli.
 
 ### 📁 `src/app/service/` (Customer Service for Chris)
 - **Customer Queries** (`/service/queries`):
-  - Table of customer inquiry tickets, Priority filters (`Urgent`, `High`, `Medium`, `Low`), Status filters (`Open`, `Pending`, `Resolved`), Modal `+ SUBMIT NEW TICKET`.
+  - Table of customer inquiry tickets, Priority filters (`Urgent`, `High`, `Medium`, `Low`), Status filters (`Open`, `Pending`, `Resolved`), Modal `SUBMIT NEW TICKET`.
 - **Issue Tracking** (`/service/issues`):
   - Live Issue tracking table, SLA countdown timers, Severity badges (`Critical`, `Major`, `Minor`), Assigned agent avatars.
 - **Solutions Library** (`/service/solutions`):
@@ -38,13 +44,13 @@ Document ini berfungsi sebagai **Memory & Context File** permanen untuk AI assis
 
 ### 📁 `src/app/sales/` (Sales Management for Sam)
 - **Sales Opportunities** (`/sales/opportunities`):
-  - Header: `+ ADD OPPORTUNITY` modal form (English).
+  - Header: `ADD OPPORTUNITY` modal form (English).
   - Filter: Last 1 Month / 3 Months / 6 Months, State (Pending, Won, In Progress, Lost).
   - Bulk Actions: `BULK DELETE`, `BULK EXPORT`.
 - **Sales Activity** (`/sales/activity`):
   - Activity log (Calls, Emails, Meetings).
 - **Customers** (`/customers`):
-  - Table with search filter, region/status filter, modal `+ ADD CUSTOMER`.
+  - Table with search filter, region/status filter, modal `ADD CUSTOMER`.
 - **Sales Reports & Analysis** (`/sales/reports`):
   - Combo Chart: Volume Bar Hijau Emerald (`#34d399`) + Kurva Smooth Revenue Indigo (`#5d5fef`).
   - World Regional Map: Peta dunia regional + Bendera negara asli (`US`, `Canada`, `China`, `UK`, `France`).
@@ -67,7 +73,7 @@ Document ini berfungsi sebagai **Memory & Context File** permanen untuk AI assis
 
 ---
 
-## 4. Keamanan & Git Rules
+## 5. Keamanan & Git Rules
 
 1. **Aturan Ignore (`.gitignore`)**:
    - `figma-mcp/` (Selalu abaikan folder token MCP Figma)
@@ -78,8 +84,8 @@ Document ini berfungsi sebagai **Memory & Context File** permanen untuk AI assis
 
 ---
 
-## 5. Perintah Pengujian & Run Lokal
+## 6. Perintah Pengujian & Run Lokal
 
 - **Development Server**: `npm run dev` (`http://localhost:3000`)
 - **Production Build Check**: `npm run build`
-- **Git Push**: `git push origin master`
+- **Git Push**: Hanya jika diminta secara manual oleh user.

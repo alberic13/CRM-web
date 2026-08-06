@@ -19,7 +19,7 @@ interface DashboardData {
     customerCountInc: number;
   };
   salesTeam: Array<{
-    id: string;
+    id?: string;
     name: string;
     avatar?: string;
     revenue: number;
@@ -27,7 +27,7 @@ interface DashboardData {
     conversionRate: number;
   }>;
   taskCompletions: Array<{
-    id: string;
+    id?: string;
     companyName: string;
     avatar?: string;
     completed: number;
@@ -69,29 +69,29 @@ export default function DashboardPage() {
   };
 
   const defaultSalesTeam = [
-    { name: 'Shirley.H', avatar: '/avatars/user1.jpg', revenue: 719, orders: 39, conversionRate: 86 },
-    { name: 'GlobalMart', avatar: '/avatars/user2.jpg', revenue: 684, orders: 35, conversionRate: 75 },
-    { name: 'Bright Solutions', avatar: '/avatars/user3.jpg', revenue: 643, orders: 32, conversionRate: 36 },
-    { name: 'Tech Innovations', avatar: '/avatars/user4.jpg', revenue: 533, orders: 29, conversionRate: 75 },
-    { name: 'Blue Horizon', avatar: '/avatars/user5.jpg', revenue: 521, orders: 34, conversionRate: 86 },
-    { name: 'BestBuyer', avatar: '/avatars/user8.jpg', revenue: 478, orders: 64, conversionRate: 45 },
-    { name: 'Alpha Solutions', avatar: '/avatars/user6.jpg', revenue: 465, orders: 36, conversionRate: 75 },
-    { name: 'Prime Goods', avatar: '/avatars/user7.jpg', revenue: 423, orders: 57, conversionRate: 76 },
-    { name: 'Wise Shoppers', avatar: '/avatars/user10.jpg', revenue: 387, orders: 32, conversionRate: 47 },
-    { name: 'Quick Solutions', avatar: '/avatars/user9.jpg', revenue: 327, orders: 25, conversionRate: 84 },
+    { id: 's1', name: 'Shirley.H', avatar: '/avatars/user1.jpg', revenue: 719, orders: 39, conversionRate: 86 },
+    { id: 's2', name: 'GlobalMart', avatar: '/avatars/user2.jpg', revenue: 684, orders: 35, conversionRate: 75 },
+    { id: 's3', name: 'Bright Solutions', avatar: '/avatars/user3.jpg', revenue: 643, orders: 32, conversionRate: 36 },
+    { id: 's4', name: 'Tech Innovations', avatar: '/avatars/user4.jpg', revenue: 533, orders: 29, conversionRate: 75 },
+    { id: 's5', name: 'Blue Horizon', avatar: '/avatars/user5.jpg', revenue: 521, orders: 34, conversionRate: 86 },
+    { id: 's6', name: 'BestBuyer', avatar: '/avatars/user8.jpg', revenue: 478, orders: 64, conversionRate: 45 },
+    { id: 's7', name: 'Alpha Solutions', avatar: '/avatars/user6.jpg', revenue: 465, orders: 36, conversionRate: 75 },
+    { id: 's8', name: 'Prime Goods', avatar: '/avatars/user7.jpg', revenue: 423, orders: 57, conversionRate: 76 },
+    { id: 's9', name: 'Wise Shoppers', avatar: '/avatars/user10.jpg', revenue: 387, orders: 32, conversionRate: 47 },
+    { id: 's10', name: 'Quick Solutions', avatar: '/avatars/user9.jpg', revenue: 327, orders: 25, conversionRate: 84 },
   ];
 
   const defaultTasks = [
-    { companyName: 'GlobalMart', avatar: '/avatars/user2.jpg', completed: 34, inProgress: 7 },
-    { companyName: 'Tech Innovations', avatar: '/avatars/user4.jpg', completed: 31, inProgress: 5 },
-    { companyName: 'Bright Solutions', avatar: '/avatars/user3.jpg', completed: 24, inProgress: 9 },
-    { companyName: 'Alpha Solutions', avatar: '/avatars/user6.jpg', completed: 21, inProgress: 3 },
-    { companyName: 'Prime Goods', avatar: '/avatars/user7.jpg', completed: 20, inProgress: 6 },
-    { companyName: 'BestBuyer', avatar: '/avatars/user8.jpg', completed: 18, inProgress: 10 },
-    { companyName: 'Shirley.H', avatar: '/avatars/user1.jpg', completed: 16, inProgress: 2 },
-    { companyName: 'Blue Horizon', avatar: '/avatars/user5.jpg', completed: 12, inProgress: 7 },
-    { companyName: 'Quick Solutions', avatar: '/avatars/user9.jpg', completed: 9, inProgress: 9 },
-    { companyName: 'Wise Shoppers', avatar: '/avatars/user10.jpg', completed: 7, inProgress: 3 },
+    { id: 't1', companyName: 'GlobalMart', avatar: '/avatars/user2.jpg', completed: 34, inProgress: 7 },
+    { id: 't2', companyName: 'Tech Innovations', avatar: '/avatars/user4.jpg', completed: 31, inProgress: 5 },
+    { id: 't3', companyName: 'Bright Solutions', avatar: '/avatars/user3.jpg', completed: 24, inProgress: 9 },
+    { id: 't4', companyName: 'Alpha Solutions', avatar: '/avatars/user6.jpg', completed: 21, inProgress: 3 },
+    { id: 't5', companyName: 'Prime Goods', avatar: '/avatars/user7.jpg', completed: 20, inProgress: 6 },
+    { id: 't6', companyName: 'BestBuyer', avatar: '/avatars/user8.jpg', completed: 18, inProgress: 10 },
+    { id: 't7', companyName: 'Shirley.H', avatar: '/avatars/user1.jpg', completed: 16, inProgress: 2 },
+    { id: 't8', companyName: 'Blue Horizon', avatar: '/avatars/user5.jpg', completed: 12, inProgress: 7 },
+    { id: 't9', companyName: 'Quick Solutions', avatar: '/avatars/user9.jpg', completed: 9, inProgress: 9 },
+    { id: 't10', companyName: 'Wise Shoppers', avatar: '/avatars/user10.jpg', completed: 7, inProgress: 3 },
   ];
 
   const salesTeam = data?.salesTeam && data.salesTeam.length > 0 ? data.salesTeam : defaultSalesTeam;
@@ -171,17 +171,18 @@ export default function DashboardPage() {
 
           {/* Row 1: Overall Revenue Trends + Sales Channel Distribution */}
           <div className={styles.row1Grid}>
+            {/* Overall Revenue Trends */}
             <div className={styles.cardBox}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.cardTitle}>Overall Revenue Trends</h2>
                 <div className={styles.legendGroup}>
                   <div className={styles.legendItem}>
                     <span className={styles.legendLineBlue} />
-                    <span>Total</span>
+                    <span>Total Revenue</span>
                   </div>
                   <div className={styles.legendItem}>
                     <span className={styles.legendLineGreen} />
-                    <span>Online</span>
+                    <span>Online Channel</span>
                   </div>
                 </div>
               </div>
@@ -189,14 +190,6 @@ export default function DashboardPage() {
               <div className={styles.chartContainer}>
                 <div className={styles.yAxis}>
                   <span className={styles.yAxisTitle}>Revenue</span>
-                  <span>90,000</span>
-                  <span>80,000</span>
-                  <span>70,000</span>
-                  <span>60,000</span>
-                  <span>50,000</span>
-                  <span>40,000</span>
-                  <span>30,000</span>
-                  <span>20,000</span>
                   <span>10,000</span>
                   <span>0</span>
                 </div>
@@ -258,26 +251,31 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Sales Channel Distribution Donut Chart */}
+            {/* Sales Channel Distribution Pie Chart (Two-Side Words Online & Retail) */}
             <div className={styles.cardBox}>
               <h2 className={styles.cardTitle}>Sales Channel Distribution</h2>
               <div className={styles.donutWrapper}>
-                <svg className={styles.donutSvg} viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="38" fill="none" stroke="#a5b4fc" strokeWidth="24" />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="38"
-                    fill="none"
-                    stroke="#5d5fef"
-                    strokeWidth="24"
-                    strokeDasharray="175.2 238.7"
-                    transform="rotate(-90 50 50)"
+                <svg className={styles.donutSvg} viewBox="0 0 200 200">
+                  {/* Retail Slice (26.6%) - Top Right Quadrant (Light Periwinkle/Lavender) */}
+                  <path
+                    d="M 100 100 L 100 20 A 80 80 0 0 1 179.6 108 Z"
+                    fill="#c7d2fe"
                   />
-                  <text x="50" y="44" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">
+
+                  {/* Online Slice (73.4%) - Large Left & Bottom Slice (Primary Solid Purple) */}
+                  <path
+                    d="M 100 100 L 179.6 108 A 80 80 0 1 1 100 20 Z"
+                    fill="#5b5cf0"
+                  />
+
+                  {/* Two-Side Embedded Labels */}
+                  {/* Left Side: Online (73.4%) inside Purple Slice */}
+                  <text x="65" y="118" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="700">
                     Online (73.4%)
                   </text>
-                  <text x="50" y="66" textAnchor="middle" fill="#5d5fef" fontSize="6" fontWeight="bold">
+
+                  {/* Right Side: Retail (26.6%) inside Periwinkle Slice */}
+                  <text x="138" y="62" textAnchor="middle" fill="#4338ca" fontSize="11" fontWeight="700">
                     Retail (26.6%)
                   </text>
                 </svg>
@@ -323,7 +321,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Revenue Trend Chart */}
+            {/* Revenue Trend Chart (Clean Curve without Red Circle) */}
             <div className={styles.cardBox}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.cardTitle}>Revenue Trend</h2>
@@ -383,8 +381,6 @@ export default function DashboardPage() {
                       stroke="#6366f1"
                       strokeWidth="3"
                     />
-                    {/* Pink Highlight Circle at month 2 */}
-                    <circle cx="80" cy="120" r="7" fill="#ffffff" stroke="#ec4899" strokeWidth="3" />
                   </svg>
 
                   <div className={styles.xAxis}>
