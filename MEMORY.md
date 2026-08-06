@@ -24,18 +24,7 @@ Document ini berfungsi sebagai **Memory & Context File** permanen untuk AI assis
 ## 3. Struktur Fitur & Halaman
 
 ### 📁 `src/app/dashboard/`
-- **Persona / Role View Switcher**:
-  - `[Overview (All)]` | `[Sales (Sam)]` | `[Marketing (Mia)]` | `[Customer Service (Chris)]`.
-- **Customer Service Overview Card (for Chris)**:
-  - Unresolved Queries (14 Tickets), First Response SLA (8.5 Mins), CSAT Rating (94.8% ★).
-- **5 KPI Metrics**: Total Revenue, Total Quantity, Number of Orders, Average Order Value, Customer Count.
-- **Charts**:
-  - `Overall Revenue Trends`: Line chart (Total & Online).
-  - `Sales Channel Distribution`: Donut chart (73.4% Online / 26.6% Retail).
-  - `Revenue Trend`: Line chart dengan toggle (Daily / Weekly / Monthly).
-- **Tabel**:
-  - `Sales Team`: Menampilkan **Foto Avatar Orang Asli** (High-Res 32px, `public/avatars/user1.jpg` - `user10.jpg`). Header: `Member Name`, `Revenue`, `Orders Number`, `Conversion Rate`.
-  - `Task Completion`: Menampilkan **Foto Avatar Orang Asli**. Header: `Company`, `Completed`, `In progress`.
+- **Dashboard Preview**: Dikembalikan 100% persis ke tampilan awal (5 KPI Metrics, Overall Revenue Trends, Sales Channel Distribution, Revenue Target, Revenue Trend dengan toggle Daily/Weekly/Monthly, serta Tabel Sales Team & Task Completion dengan Foto Orang Asli).
 
 ### 📁 `src/app/service/` (Customer Service for Chris)
 - **Customer Queries** (`/service/queries`):
@@ -66,7 +55,7 @@ Document ini berfungsi sebagai **Memory & Context File** permanen untuk AI assis
 - **Customer Segmentation** (`/marketing/segmentation`):
   - Metric Bar: Total Customers (1090), New (26), Loyal (158), Lost (11).
   - Card 1: `Customer source` Donut.
-  - Card 2: `Age Distribution` Donut Diagram (Enlarged `350x200`) dengan **Garis Penunjuk Akurate (Callout Lines + Anchor Dots)** mengarah ke teks persentase (`0-20`, `21-30`, `31-40`, `41-50`, `>50`).
+  - Card 2: `Age Distribution` Donut Diagram (Enlarged `350x200`) dengan **Garis Penunjuk Akurat (Callout Lines + Anchor Dots)** mengarah ke teks persentase (`0-20`, `21-30`, `31-40`, `41-50`, `>50`).
   - Card 3: `Purchase Behavior Analysis` **Horizontal LINE Graph** (bukan dot graph), lengkap dengan sumbu Y vertikal `(Purchase Frequency)` dan sumbu X `(Age)`.
 - **Marketing Campaigns** (`/marketing/campaigns`):
   - Table Header: `Campaign Name`, `Channel`, `Budget`, `Leads Generated`, `Status`.
