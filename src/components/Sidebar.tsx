@@ -14,10 +14,12 @@ export default function Sidebar({ activeMenu }: SidebarProps) {
 
   const [salesOpen, setSalesOpen] = useState(pathname.startsWith('/sales') || pathname === '/customers');
   const [marketingOpen, setMarketingOpen] = useState(pathname.startsWith('/marketing'));
+  const [serviceOpen, setServiceOpen] = useState(pathname.startsWith('/service'));
 
   const isDashboardActive = pathname === '/dashboard' || activeMenu === 'Dashboard';
   const isSalesActive = pathname.startsWith('/sales') || pathname === '/customers' || activeMenu === 'Sales';
   const isMarketingActive = pathname.startsWith('/marketing') || activeMenu === 'Marketing';
+  const isServiceActive = pathname.startsWith('/service') || activeMenu === 'Service' || activeMenu === 'Customer Service';
   const isClientsActive = pathname === '/clients' || activeMenu === 'Clients';
   const isAnalyticsActive = pathname === '/analytics' || activeMenu === 'Analytics';
   const isSettingActive = pathname === '/settings' || activeMenu === 'Setting';
@@ -153,6 +155,65 @@ export default function Sidebar({ activeMenu }: SidebarProps) {
                 className={`${styles.subNavItem} ${pathname === '/marketing/campaigns' ? styles.activeSubNavItem : ''}`}
               >
                 <span>Campaigns</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Customer Service Dropdown (for Chris) */}
+        <div className={styles.navGroup}>
+          <button
+            type="button"
+            className={`${styles.navItem} ${isServiceActive ? styles.activeNavItem : ''}`}
+            onClick={() => setServiceOpen(!serviceOpen)}
+          >
+            <div className={styles.navItemContent}>
+              <span className={styles.navItemIcon}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
+                </svg>
+              </span>
+              <span>Customer Service</span>
+            </div>
+            <svg
+              className={`${styles.chevron} ${serviceOpen ? styles.chevronOpen : ''}`}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            {isServiceActive && !serviceOpen && <div className={styles.activeIndicator} />}
+          </button>
+
+          {serviceOpen && (
+            <div className={styles.subMenu}>
+              <Link
+                href="/service/queries"
+                className={`${styles.subNavItem} ${pathname === '/service/queries' ? styles.activeSubNavItem : ''}`}
+              >
+                <span>Customer Queries</span>
+              </Link>
+              <Link
+                href="/service/issues"
+                className={`${styles.subNavItem} ${pathname === '/service/issues' ? styles.activeSubNavItem : ''}`}
+              >
+                <span>Issue Tracking</span>
+              </Link>
+              <Link
+                href="/service/solutions"
+                className={`${styles.subNavItem} ${pathname === '/service/solutions' ? styles.activeSubNavItem : ''}`}
+              >
+                <span>Solutions Library</span>
+              </Link>
+              <Link
+                href="/service/csat"
+                className={`${styles.subNavItem} ${pathname === '/service/csat' ? styles.activeSubNavItem : ''}`}
+              >
+                <span>CSAT & Feedback</span>
               </Link>
             </div>
           )}

@@ -1,0 +1,200 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f6f8fd;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1e293b;
+}
+
+.mainContent {
+  margin-left: 260px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentBody {
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.breadcrumbs {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.primaryBtn {
+  padding: 10px 18px;
+  background: #5d5fef;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(93, 95, 239, 0.25);
+  transition: all 0.2s ease;
+}
+
+.primaryBtn:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+
+/* Search Hero Box */
+.searchHero {
+  background: linear-gradient(135deg, #5d5fef 0%, #4338ca 100%);
+  border-radius: 20px;
+  padding: 28px 32px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 25px -5px rgba(93, 95, 239, 0.3);
+}
+
+.heroTitle {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.heroSearchRow {
+  display: flex;
+  gap: 12px;
+}
+
+.heroSearchInput {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  outline: none;
+}
+
+.heroSearchBtn {
+  padding: 12px 24px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+/* Category Tabs */
+.tabsRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.activeTabBtn {
+  background: #f0f1ff;
+  border-color: #5d5fef;
+  color: #5d5fef;
+  font-weight: 800;
+}
+
+/* Articles Grid */
+.articlesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.articleCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  transition: all 0.2s ease;
+}
+
+.articleCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.categoryBadge {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #eeeffe;
+  color: #5d5fef;
+}
+
+.articleTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.articleSummary {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.articleFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid #f8fafc;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.metaGroup {
+  display: flex;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.dateText {
+  font-weight: 500;
+}

@@ -1,0 +1,201 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f6f8fd;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1e293b;
+}
+
+.mainContent {
+  margin-left: 260px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentBody {
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.breadcrumbs {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.metricCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px 26px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metricLabel {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.valRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.metricVal {
+  font-size: 28px;
+  font-weight: 800;
+  color: #5d5fef;
+}
+
+.incBadge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.starsSpan {
+  font-size: 14px;
+  color: #eab308;
+  letter-spacing: 2px;
+}
+
+.cardBox {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.reviewsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 18px;
+}
+
+.reviewCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarImg {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.userCompany {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.ratingGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.starsText {
+  color: #eab308;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.dateText {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.commentText {
+  font-size: 13.5px;
+  color: #334155;
+  margin: 0;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.reviewFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px dashed #cbd5e1;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.agentTag strong {
+  color: #5d5fef;
+}
+
+.categoryBadge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
