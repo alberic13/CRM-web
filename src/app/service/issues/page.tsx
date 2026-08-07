@@ -47,7 +47,7 @@ export default function IssueTrackingPage() {
           {/* Header */}
           <div className={styles.topRow}>
             <div>
-              <h1 className={styles.pageTitle}>Issue Tracking & SLA SLA Center</h1>
+              <h1 className={styles.pageTitle}>Issue Tracking & SLA Center</h1>
               <div className={styles.breadcrumbs}>
                 <span>Home</span> &gt; <span>Customer Service</span> &gt; <strong>Issue Tracking</strong>
               </div>

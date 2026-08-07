@@ -30,15 +30,22 @@ export default function SegmentationPage() {
   // Selected Row Checkbox IDs
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData.user) setUser(resData.user);
-      });
-  }, []);
+  // Add Customer Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newCustName, setNewCustName] = useState('');
+  const [newCustEmail, setNewCustEmail] = useState('');
+  const [newCustAge, setNewCustAge] = useState<number>(30);
+  const [newCustRegion, setNewCustRegion] = useState('North America');
+  const [newCustSource, setNewCustSource] = useState<'Online' | 'Retail'>('Online');
+  const [newCustState, setNewCustState] = useState<'Loyal' | 'New' | 'Lost'>('New');
 
-  const customersData: CustomerRow[] = [
+  // Custom name mode flag
+  const [isCustomNameInput, setIsCustomNameInput] = useState(false);
+
+  // Dynamic Customers State from Database API + Sample Items
+  const [dbCustomers, setDbCustomers] = useState<CustomerRow[]>([]);
+
+  const defaultCustomersData: CustomerRow[] = [
     { id: '13846', customerNo: '13846', name: 'Bright Solutions', age: 34, region: 'North America', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '3/21/2024' },
     { id: '98745', customerNo: '98745', name: 'GlobalMart', age: 23, region: 'Europe', purchaseNum: 4, source: 'Retail', state: 'Loyal', lastPurchase: '5/1/2024', firstPurchase: '3/21/2024' },
     { id: '34972', customerNo: '34972', name: 'Tech Innovations', age: 38, region: 'Asia Pacific', purchaseNum: 8, source: 'Online', state: 'Loyal', lastPurchase: '4/17/2024', firstPurchase: '3/17/2024' },
@@ -50,6 +57,78 @@ export default function SegmentationPage() {
     { id: '24567', customerNo: '24567', name: 'Quick Solutions', age: 38, region: 'Asia Pacific', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '2/19/2024' },
     { id: '23565', customerNo: '23565', name: 'Visionary Tech', age: 53, region: 'Europe', purchaseNum: 2, source: 'Retail', state: 'Lost', lastPurchase: '6/14/2022', firstPurchase: '2/19/2024' },
   ];
+
+  // Fetch Customers from Database API
+  const fetchCustomers = () => {
+    fetch('/api/customers')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.customers && Array.isArray(data.customers)) {
+          const mapped: CustomerRow[] = data.customers.map((c: any) => ({
+            id: c.id,
+            customerNo: c.customerNo || Math.floor(10000 + Math.random() * 90000).toString(),
+            name: c.name,
+            age: c.age || 32,
+            region: c.region || 'North America',
+            purchaseNum: c.purchaseNum || 1,
+            source: (c.source === 'Retail' ? 'Retail' : 'Online') as 'Online' | 'Retail',
+            state: (c.status || 'New') as 'Loyal' | 'New' | 'Lost',
+            lastPurchase: c.lastPurchase ? new Date(c.lastPurchase).toLocaleDateString('en-US') : new Date().toLocaleDateString('en-US'),
+            firstPurchase: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-US') : new Date().toLocaleDateString('en-US'),
+          }));
+          setDbCustomers(mapped);
+        }
+      })
+      .catch((err) => console.error('Fetch customers error:', err));
+  };
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.user) setUser(resData.user);
+      });
+
+    fetchCustomers();
+  }, []);
+
+  // Combined Customers Data
+  const customersData = useMemo(() => {
+    const combined = [...dbCustomers, ...defaultCustomersData];
+    const uniqueMap = new Map();
+    combined.forEach((item) => {
+      if (!uniqueMap.has(item.customerNo)) {
+        uniqueMap.set(item.customerNo, item);
+      }
+    });
+    return Array.from(uniqueMap.values());
+  }, [dbCustomers]);
+
+  // List of Sales Customers for Dropdown Selection
+  const salesCustomerOptions = useMemo(() => {
+    const names = customersData.map((c) => c.name);
+    return Array.from(new Set(names));
+  }, [customersData]);
+
+  // Handle Customer Name Select from Sales Customers
+  const handleSelectCustomerFromSales = (selectedName: string) => {
+    if (selectedName === 'CUSTOM_NEW') {
+      setIsCustomNameInput(true);
+      setNewCustName('');
+    } else {
+      setIsCustomNameInput(false);
+      setNewCustName(selectedName);
+
+      // Auto populate attributes if customer exists
+      const match = customersData.find((c) => c.name === selectedName);
+      if (match) {
+        setNewCustAge(match.age);
+        setNewCustRegion(match.region);
+        setNewCustSource(match.source);
+        setNewCustState(match.state);
+      }
+    }
+  };
 
   // Filter Table Customers
   const filteredCustomers = useMemo(() => {
@@ -66,7 +145,7 @@ export default function SegmentationPage() {
       }
       return true;
     });
-  }, [customerTypeFilter, regionFilter, stateFilter, ageFilter]);
+  }, [customersData, customerTypeFilter, regionFilter, stateFilter, ageFilter]);
 
   // Checkbox toggle logic
   const toggleSelect = (id: string) => {
@@ -92,6 +171,39 @@ export default function SegmentationPage() {
     setStateFilter('All');
     setAgeFilter('All');
     setSelectedIds([]);
+  };
+
+  // Submit Add Customer Form
+  const handleAddCustomerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustName.trim()) return;
+
+    try {
+      const email = newCustEmail.trim() || `${newCustName.toLowerCase().replace(/\s+/g, '')}@example.com`;
+      const res = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCustName,
+          email,
+          region: newCustRegion,
+          source: newCustSource,
+          status: newCustState,
+        }),
+      });
+
+      if (res.ok) {
+        setIsAddModalOpen(false);
+        setNewCustName('');
+        setNewCustEmail('');
+        setIsCustomNameInput(false);
+        fetchCustomers();
+      } else {
+        alert('Failed to add customer');
+      }
+    } catch (err) {
+      console.error('Error adding customer:', err);
+    }
   };
 
   // Bulk CSV Export
@@ -127,9 +239,9 @@ export default function SegmentationPage() {
 
   // Filter Scale Factor Calculation
   const scaleFactor = useMemo(() => {
-    let factor = filteredCustomers.length / customersData.length;
+    let factor = filteredCustomers.length / (customersData.length || 1);
     return Math.max(0.1, factor);
-  }, [filteredCustomers]);
+  }, [filteredCustomers, customersData]);
 
   // Dynamic Horizontal Metrics
   const metrics = useMemo(() => {
@@ -183,7 +295,7 @@ export default function SegmentationPage() {
       p41_50: ((count41_50 / total) * 100).toFixed(1),
       pOver50: ((countOver50 / total) * 100).toFixed(1),
     };
-  }, [filteredCustomers]);
+  }, [filteredCustomers, customersData]);
 
   // Dynamic Behavior LINE graph rows
   const behaviorLineRows = useMemo(() => {
@@ -362,10 +474,8 @@ export default function SegmentationPage() {
 
                   {/* Multi-segment Donut Ring */}
                   <g filter="url(#shadow)">
-                    {/* Background Ring */}
                     <circle cx="175" cy="100" r="52" fill="none" stroke="#f1f5f9" strokeWidth="15" />
 
-                    {/* Segment 1: 0-20 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -377,7 +487,6 @@ export default function SegmentationPage() {
                       transform="rotate(-90 175 100)"
                     />
 
-                    {/* Segment 2: >50 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -389,7 +498,6 @@ export default function SegmentationPage() {
                       transform="rotate(-41.76 175 100)"
                     />
 
-                    {/* Segment 3: 41-50 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -401,7 +509,6 @@ export default function SegmentationPage() {
                       transform="rotate(-8.64 175 100)"
                     />
 
-                    {/* Segment 4: 31-40 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -413,7 +520,6 @@ export default function SegmentationPage() {
                       transform="rotate(71.28 175 100)"
                     />
 
-                    {/* Segment 5: 21-30 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -629,6 +735,129 @@ export default function SegmentationPage() {
               </div>
             </div>
           </div>
+
+          {/* Add Customer Modal */}
+          {isAddModalOpen && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modalContent}>
+                <div className={styles.modalHeader}>
+                  <h3 className={styles.modalTitle}>Add New Customer</h3>
+                  <button className={styles.closeBtn} onClick={() => setIsAddModalOpen(false)}>×</button>
+                </div>
+
+                <form onSubmit={handleAddCustomerSubmit} className={styles.modalForm}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Customer Name * (Select from Sales Customers)</label>
+
+                    {!isCustomNameInput ? (
+                      <select
+                        className={styles.formSelect}
+                        value={newCustName}
+                        onChange={(e) => handleSelectCustomerFromSales(e.target.value)}
+                        required
+                      >
+                        <option value="">-- Select Customer from Sales --</option>
+                        {salesCustomerOptions.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                        <option value="CUSTOM_NEW">✏️ + Enter New Custom Customer Name</option>
+                      </select>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          type="text"
+                          className={styles.formInput}
+                          placeholder="e.g. Acme Corp"
+                          value={newCustName}
+                          onChange={(e) => setNewCustName(e.target.value)}
+                          required
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          className={styles.cancelBtn}
+                          style={{ fontSize: '11px', padding: '6px 10px' }}
+                          onClick={() => setIsCustomNameInput(false)}
+                        >
+                          List
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Email</label>
+                    <input
+                      type="email"
+                      className={styles.formInput}
+                      placeholder="acme@example.com"
+                      value={newCustEmail}
+                      onChange={(e) => setNewCustEmail(e.target.value)}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Age</label>
+                    <input
+                      type="number"
+                      className={styles.formInput}
+                      value={newCustAge}
+                      onChange={(e) => setNewCustAge(parseInt(e.target.value) || 30)}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Region</label>
+                    <select
+                      className={styles.formSelect}
+                      value={newCustRegion}
+                      onChange={(e) => setNewCustRegion(e.target.value)}
+                    >
+                      <option value="North America">North America</option>
+                      <option value="Europe">Europe</option>
+                      <option value="Asia Pacific">Asia Pacific</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Source</label>
+                    <select
+                      className={styles.formSelect}
+                      value={newCustSource}
+                      onChange={(e) => setNewCustSource(e.target.value as 'Online' | 'Retail')}
+                    >
+                      <option value="Online">Online</option>
+                      <option value="Retail">Retail</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>State / Status</label>
+                    <select
+                      className={styles.formSelect}
+                      value={newCustState}
+                      onChange={(e) => setNewCustState(e.target.value as 'Loyal' | 'New' | 'Lost')}
+                    >
+                      <option value="New">New</option>
+                      <option value="Loyal">Loyal</option>
+                      <option value="Lost">Lost</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.modalActions}>
+                    <button type="button" className={styles.cancelBtn} onClick={() => setIsAddModalOpen(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className={styles.submitBtn}>
+                      Save Customer
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
