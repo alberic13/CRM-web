@@ -196,16 +196,27 @@ export default function ReportsPage() {
                       const yPos = 180 - barHeight;
 
                       return (
-                        <rect
-                          key={i}
-                          x={xPos}
-                          y={yPos}
-                          width={barWidth}
-                          height={barHeight}
-                          fill="#34d399"
-                          rx="5"
-                          ry="5"
-                        />
+                        <g key={i}>
+                          <rect
+                            x={xPos}
+                            y={yPos}
+                            width={barWidth}
+                            height={barHeight}
+                            fill="#34d399"
+                            rx="5"
+                            ry="5"
+                          />
+                          <text
+                            x={xPos + barWidth / 2}
+                            y={Math.max(10, yPos - 3)}
+                            textAnchor="middle"
+                            fill="#059669"
+                            fontSize="8"
+                            fontWeight="bold"
+                          >
+                            {d.volume}
+                          </text>
+                        </g>
                       );
                     })}
 
@@ -272,20 +283,49 @@ export default function ReportsPage() {
             <div className={styles.channelMapGrid}>
               {/* Donut Chart */}
               <div className={styles.channelContent}>
-                <svg width="150" height="150" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="38" fill="none" stroke="#c7d2fe" strokeWidth="20" />
+                <svg width="220" height="200" viewBox="0 0 150 130">
+                  {/* Background Periwinkle Ring (Online 38.2%) */}
+                  <circle cx="65" cy="60" r="34" fill="none" stroke="#c7d2fe" strokeWidth="18" />
+
+                  {/* Primary Indigo Ring (Retail 61.8%) */}
                   <circle
-                    cx="50"
-                    cy="50"
-                    r="38"
+                    cx="65"
+                    cy="60"
+                    r="34"
                     fill="none"
                     stroke="#5d5fef"
-                    strokeWidth="20"
-                    strokeDasharray="147.5 238.7"
-                    transform="rotate(-90 50 50)"
+                    strokeWidth="18"
+                    strokeDasharray="131.9 213.6"
+                    transform="rotate(-90 65 60)"
                   />
-                  <text x="92" y="44" fill="#5d5fef" fontSize="7" fontWeight="bold">38.2%</text>
-                  <text x="8" y="70" fill="#5d5fef" fontSize="7" fontWeight="bold">61.8%</text>
+
+                  {/* Callout Pointer Line & Label for Online (38.2%) */}
+                  <polyline
+                    points="44,39 26,21 8,21"
+                    fill="none"
+                    stroke="#818cf8"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="44" cy="39" r="2.5" fill="#4338ca" />
+                  <text x="8" y="14" textAnchor="start" fill="#4338ca" fontSize="10.5" fontWeight="800">
+                    38.2%
+                  </text>
+
+                  {/* Callout Pointer Line & Label for Retail (61.8%) - Shifted to Bottom Right */}
+                  <polyline
+                    points="88,79 108,102 142,102"
+                    fill="none"
+                    stroke="#5d5fef"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="88" cy="79" r="2.5" fill="#5d5fef" />
+                  <text x="142" y="93" textAnchor="end" fill="#5d5fef" fontSize="10.5" fontWeight="800">
+                    61.8%
+                  </text>
                 </svg>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', fontWeight: 600 }}>
