@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import styles from './activity.module.css';
 
 export default function SalesActivityPage() {
   const [user, setUser] = useState<any>(null);
@@ -24,41 +25,47 @@ export default function SalesActivityPage() {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+    <div className={styles.layout}>
       <Sidebar activeMenu="Sales" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      
+      <div className={styles.mainContent}>
         <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
-        <main style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Sales Activity Log</h1>
-            <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-              Home &gt; Sales &gt; <strong>Sales Activity</strong>
+        
+        <main className={styles.contentBody}>
+          <div className={styles.topRow}>
+            <div>
+              <h1 className={styles.pageTitle}>Sales Activity Log</h1>
+              <div className={styles.breadcrumbs}>
+                <span>Home</span> &gt; <span>Sales</span> &gt; <strong>Sales Activity</strong>
+              </div>
             </div>
           </div>
 
-          <div style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid #f1f5f9', overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+          <div className={styles.cardBox}>
+            <table className={styles.table}>
               <thead>
-                <tr style={{ background: '#f8fafc', color: '#94a3b8', fontSize: '12px', textAlign: 'left' }}>
-                  <th style={{ padding: '12px' }}>Waktu</th>
-                  <th style={{ padding: '12px' }}>Sales Agent</th>
-                  <th style={{ padding: '12px' }}>Aktivitas</th>
-                  <th style={{ padding: '12px' }}>Tipe</th>
-                  <th style={{ padding: '12px' }}>Status</th>
+                <tr>
+                  <th>Waktu</th>
+                  <th>Sales Agent</th>
+                  <th>Aktivitas</th>
+                  <th>Tipe</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {activities.map((a) => (
-                  <tr key={a.id} style={{ borderBottom: '1px solid #f8fafc', fontSize: '14px', color: '#334155' }}>
-                    <td style={{ padding: '14px 12px', fontWeight: 600 }}>{a.time}</td>
-                    <td style={{ padding: '14px 12px', fontWeight: 700 }}>{a.agent}</td>
-                    <td style={{ padding: '14px 12px' }}>{a.action}</td>
-                    <td style={{ padding: '14px 12px' }}>
-                      <span style={{ background: '#f0f1ff', color: '#5d5fef', padding: '2px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                  <tr key={a.id}>
+                    <td style={{ fontWeight: 600 }}>{a.time}</td>
+                    <td style={{ fontWeight: 700 }}>{a.agent}</td>
+                    <td>{a.action}</td>
+                    <td>
+                      <span className={styles.typeBadge}>
                         {a.type}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 12px', color: '#22c55e', fontWeight: 700 }}>{a.status}</td>
+                    <td className={a.status === 'Completed' ? styles.statusCompleted : styles.statusProgress}>
+                      {a.status}
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -84,6 +84,37 @@ export default function CustomersPage() {
     }
   };
 
+  const handleExportCsv = () => {
+    if (!customers || customers.length === 0) {
+      alert('No customer data available to export.');
+      return;
+    }
+
+    const headers = ['Customer No', 'Customer Name', 'Contact Email', 'Region', 'Last Purchase', 'Source', 'Status', 'Created At'];
+    
+    const rows = customers.map((c) => [
+      `="${c.customerNo}"`,
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${(c.email || '').replace(/"/g, '""')}"`,
+      `"${c.region || ''}"`,
+      `="${new Date(c.lastPurchase).toLocaleDateString()}"`,
+      `"${c.source || ''}"`,
+      `"${c.status || ''}"`,
+      `="${new Date(c.createdAt || c.lastPurchase).toLocaleDateString()}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `sales_customers_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className={styles.layout}>
       <Sidebar activeMenu="Customers" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
@@ -113,7 +144,9 @@ export default function CustomersPage() {
                 <span>ADD CUSTOMER</span>
               </button>
 
-              <button className={styles.secondaryBtn}>EXPORT</button>
+              <button className={styles.secondaryBtn} onClick={handleExportCsv}>
+                EXPORT
+              </button>
             </div>
           </div>
 
