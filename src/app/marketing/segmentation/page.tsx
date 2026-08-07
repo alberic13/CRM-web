@@ -20,7 +20,7 @@ interface CustomerRow {
 
 export default function SegmentationPage() {
   const [user, setUser] = useState<any>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>(['29373', '18673']);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const customersData: CustomerRow[] = [
     { id: '13846', customerNo: '13846', name: 'Bright Solutions', age: 34, region: 'North America', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '3/21/2024' },
