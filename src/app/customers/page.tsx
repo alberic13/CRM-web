@@ -20,6 +20,7 @@ interface Customer {
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [regionFilter, setRegionFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -85,10 +86,10 @@ export default function CustomersPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Customers" />
+      <Sidebar activeMenu="Customers" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Top Title & Actions */}

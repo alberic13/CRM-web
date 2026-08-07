@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 
 export default function SalesActivityPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -24,19 +25,19 @@ export default function SalesActivityPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      <Sidebar activeMenu="Sales" />
-      <div style={{ marginLeft: '260px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Header user={user} />
-        <main style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <Sidebar activeMenu="Sales" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
+        <main style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div>
-            <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Sales Activity Log</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Sales Activity Log</h1>
             <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
               Home &gt; Sales &gt; <strong>Sales Activity</strong>
             </div>
           </div>
 
-          <div style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid #f1f5f9' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid #f1f5f9', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', color: '#94a3b8', fontSize: '12px', textAlign: 'left' }}>
                   <th style={{ padding: '12px' }}>Waktu</th>

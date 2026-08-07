@@ -7,10 +7,11 @@
 }
 
 .mainContent {
-  margin-left: 260px;
+  margin-left: 240px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  transition: margin-left 0.3s ease;
 }
 
 .contentBody {
@@ -106,12 +107,6 @@
   gap: 20px;
 }
 
-@media (max-width: 1100px) {
-  .row1Grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .metricCards4Grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -180,6 +175,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .cardTitle {
@@ -269,12 +266,6 @@
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 20px;
-}
-
-@media (max-width: 1100px) {
-  .channelMapGrid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .channelContent {
@@ -375,13 +366,6 @@
   margin-top: 8px;
 }
 
-@media (max-width: 1100px) {
-  .customerAnalysisContent {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
 .pieDiagramArea {
   position: relative;
   width: 380px;
@@ -404,6 +388,7 @@
   align-items: center;
   gap: 16px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .custStatCard {
@@ -471,6 +456,7 @@
   margin-bottom: 6px;
   width: 100%;
   justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .legendSquareMint {
@@ -543,12 +529,6 @@
   gap: 20px;
 }
 
-@media (max-width: 1000px) {
-  .row4Grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .productPrefGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -593,4 +573,65 @@
   color: #ef4444;
   font-weight: 700;
   font-size: 11px;
+}
+
+/* Media Queries for Tablet & Mobile */
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentBody {
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .row1Grid,
+  .channelMapGrid,
+  .row4Grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mapContent {
+    flex-direction: column;
+    height: auto;
+    gap: 16px;
+  }
+
+  .countryList {
+    width: 100%;
+  }
+
+  .customerAnalysisContent {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pieDiagramArea {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .rightAnalysisCol {
+    width: 100%;
+    align-items: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .metricCards4Grid {
+    grid-template-columns: 1fr;
+  }
+
+  .productPrefGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .custMetricsGroup {
+    justify-content: center;
+  }
+
+  .worldMapImage {
+    max-width: 100%;
+  }
 }

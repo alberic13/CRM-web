@@ -7,10 +7,11 @@
 }
 
 .mainContent {
-  margin-left: 260px;
+  margin-left: 240px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  transition: margin-left 0.3s ease;
 }
 
 .contentBody {
@@ -54,6 +55,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .dateSelectWrapper {
@@ -86,12 +88,6 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 16px;
-}
-
-@media (max-width: 1200px) {
-  .kpiGrid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
 }
 
 .kpiCard {
@@ -152,6 +148,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .cardTitle {
@@ -166,12 +164,6 @@
   display: grid;
   grid-template-columns: 2.3fr 1fr;
   gap: 20px;
-}
-
-@media (max-width: 1100px) {
-  .row1Grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .legendGroup {
@@ -278,12 +270,6 @@
   gap: 20px;
 }
 
-@media (max-width: 1100px) {
-  .row2Grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .targetMetricsList {
   display: flex;
   flex-direction: column;
@@ -354,12 +340,6 @@
   gap: 20px;
 }
 
-@media (max-width: 1000px) {
-  .row3Grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .segmentedToggle {
   display: flex;
   background: #f8fafc;
@@ -384,10 +364,20 @@
   color: #ffffff;
 }
 
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+
+  /* Custom Touch Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #c7d2fe transparent;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 4px;
+  min-width: 400px;
 }
 
 .table th {
@@ -440,4 +430,46 @@
   object-fit: cover;
   border: 1.5px solid #ffffff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1280px) {
+  .kpiGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentBody {
+    padding: 20px 16px;
+    gap: 20px;
+  }
+
+  .row1Grid,
+  .row2Grid,
+  .row3Grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pageTitle {
+    font-size: 20px;
+  }
+
+  .cardBox {
+    padding: 16px;
+  }
 }

@@ -435,3 +435,48 @@
   gap: 12px;
   margin-top: 12px;
 }
+
+/* Responsive Media Queries */
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentBody {
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .cardBox {
+    overflow-x: auto;
+    padding: 16px;
+  }
+
+  .table {
+    min-width: 700px;
+  }
+
+  .kpiCardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiCardsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterGroup {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
+}

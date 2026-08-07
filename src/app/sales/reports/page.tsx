@@ -11,8 +11,9 @@ interface TrendItem {
   revenue: number;
 }
 
-export default function ReportsPage() {
+export default function SalesReportsPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Filter States
   const [periodFilter, setPeriodFilter] = useState('Last 1 Year');
@@ -277,10 +278,10 @@ export default function ReportsPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Sales" />
+      <Sidebar activeMenu="Sales" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Top Title & Header Buttons */}

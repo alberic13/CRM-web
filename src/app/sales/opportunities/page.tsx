@@ -37,6 +37,7 @@ const formatDateForExcelCsv = (dateInput: any): string => {
 
 export default function OpportunitiesPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
 
@@ -267,10 +268,10 @@ export default function OpportunitiesPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Sales" />
+      <Sidebar activeMenu="Sales" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Top Title & Header */}

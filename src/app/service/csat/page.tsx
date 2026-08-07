@@ -19,6 +19,7 @@ interface ReviewFeedback {
 
 export default function CustomerSatisfactionPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const reviews: ReviewFeedback[] = [
     {
@@ -77,10 +78,10 @@ export default function CustomerSatisfactionPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Customer Service" />
+      <Sidebar activeMenu="Customer Service" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Header */}

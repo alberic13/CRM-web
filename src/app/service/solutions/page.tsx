@@ -17,6 +17,7 @@ interface SolutionArticle {
 
 export default function SolutionsLibraryPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -85,10 +86,10 @@ export default function SolutionsLibraryPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Customer Service" />
+      <Sidebar activeMenu="Customer Service" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Header */}

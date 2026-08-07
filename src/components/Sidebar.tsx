@@ -7,9 +7,11 @@ import styles from './Sidebar.module.css';
 
 interface SidebarProps {
   activeMenu?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ activeMenu }: SidebarProps) {
+export default function Sidebar({ activeMenu, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   const [salesOpen, setSalesOpen] = useState(pathname.startsWith('/sales') || pathname === '/customers');
@@ -24,12 +26,24 @@ export default function Sidebar({ activeMenu }: SidebarProps) {
   const isAnalyticsActive = pathname === '/analytics' || activeMenu === 'Analytics';
   const isSettingActive = pathname === '/settings' || activeMenu === 'Setting';
 
+  const handleLinkClick = () => {
+    if (onClose) onClose();
+  };
+
   return (
-    <aside className={styles.sidebar}>
-      {/* Brand Header */}
-      <Link href="/dashboard" className={styles.brand}>
-        <span className={styles.brandName}>FlowTech</span>
-      </Link>
+    <>
+      {isOpen && <div className={styles.mobileBackdrop} onClick={onClose} />}
+
+      <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
+        {/* Brand Header */}
+        <div className={styles.brandRow}>
+          <Link href="/dashboard" className={styles.brand} onClick={handleLinkClick}>
+            <span className={styles.brandName}>FlowTech</span>
+          </Link>
+          <button className={styles.closeMobileBtn} onClick={onClose} aria-label="Close menu">
+            ×
+          </button>
+        </div>
 
       {/* Navigation List */}
       <nav className={styles.nav}>
@@ -342,5 +356,6 @@ export default function Sidebar({ activeMenu }: SidebarProps) {
         </div>
       </div>
     </aside>
+    </>
   );
 }

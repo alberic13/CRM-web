@@ -7,10 +7,11 @@
 }
 
 .mainContent {
-  margin-left: 260px;
+  margin-left: 240px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  transition: margin-left 0.3s ease;
 }
 
 .contentBody {
@@ -24,6 +25,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .pageTitle {
@@ -81,6 +84,7 @@
 .heroSearchRow {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .heroSearchInput {
@@ -90,6 +94,7 @@
   border: none;
   font-size: 14px;
   outline: none;
+  min-width: 200px;
 }
 
 .heroSearchBtn {
@@ -132,7 +137,7 @@
 /* Articles Grid */
 .articlesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
 }
 
@@ -145,7 +150,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-
   transition: all 0.2s ease;
 }
 
@@ -197,4 +201,34 @@
 
 .dateText {
   font-weight: 500;
+}
+
+/* Tablet & Mobile Media Queries */
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentBody {
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .searchHero {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroSearchRow {
+    flex-direction: column;
+  }
+
+  .heroSearchBtn {
+    width: 100%;
+  }
+
+  .articlesGrid {
+    grid-template-columns: 1fr;
+  }
 }

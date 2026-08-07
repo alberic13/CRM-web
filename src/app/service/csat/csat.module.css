@@ -7,10 +7,11 @@
 }
 
 .mainContent {
-  margin-left: 260px;
+  margin-left: 240px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  transition: margin-left 0.3s ease;
 }
 
 .contentBody {
@@ -24,6 +25,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .pageTitle {
@@ -41,7 +44,7 @@
 
 .metricGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
 }
 
@@ -106,7 +109,7 @@
 
 .reviewsList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 18px;
 }
 
@@ -198,4 +201,30 @@
   background: #ffffff;
   border: 1px solid #cbd5e1;
   color: #475569;
+}
+
+/* Tablet & Mobile Media Queries */
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentBody {
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .cardBox {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .reviewsList {
+    grid-template-columns: 1fr;
+  }
+
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
 }

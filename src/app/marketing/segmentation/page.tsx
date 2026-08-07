@@ -20,6 +20,7 @@ interface CustomerRow {
 
 export default function SegmentationPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Filter States
   const [customerTypeFilter, setCustomerTypeFilter] = useState('All');
@@ -315,10 +316,10 @@ export default function SegmentationPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Marketing" />
+      <Sidebar activeMenu="Marketing" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Top Title & Header */}

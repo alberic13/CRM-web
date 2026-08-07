@@ -20,6 +20,7 @@ interface Ticket {
 
 export default function CustomerQueriesPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([
     { id: '1', ticketNo: 'TCK-8091', customerName: 'Tau Corporation', avatar: '/avatars/user2.jpg', subject: 'API Integration Timeout on Checkout', category: 'Technical Issue', priority: 'Urgent', status: 'Open', agentName: 'Chris Evans', createdDate: '2026-08-06' },
     { id: '2', ticketNo: 'TCK-8090', customerName: 'GlobalMart Inc.', avatar: '/avatars/user3.jpg', subject: 'Monthly Subscription Billing Clarification', category: 'Billing', priority: 'High', status: 'Pending', agentName: 'Shirley.H', createdDate: '2026-08-06' },
@@ -78,10 +79,10 @@ export default function CustomerQueriesPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Customer Service" />
+      <Sidebar activeMenu="Customer Service" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Top Title & Header */}
