@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import styles from './segmentation.module.css';
@@ -20,7 +20,23 @@ interface CustomerRow {
 
 export default function SegmentationPage() {
   const [user, setUser] = useState<any>(null);
+
+  // Filter States
+  const [customerTypeFilter, setCustomerTypeFilter] = useState('All');
+  const [regionFilter, setRegionFilter] = useState('All');
+  const [stateFilter, setStateFilter] = useState('All');
+  const [ageFilter, setAgeFilter] = useState('All');
+
+  // Selected Row Checkbox IDs
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.user) setUser(resData.user);
+      });
+  }, []);
 
   const customersData: CustomerRow[] = [
     { id: '13846', customerNo: '13846', name: 'Bright Solutions', age: 34, region: 'North America', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '3/21/2024' },
@@ -35,14 +51,24 @@ export default function SegmentationPage() {
     { id: '23565', customerNo: '23565', name: 'Visionary Tech', age: 53, region: 'Europe', purchaseNum: 2, source: 'Retail', state: 'Lost', lastPurchase: '6/14/2022', firstPurchase: '2/19/2024' },
   ];
 
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData.user) setUser(resData.user);
-      });
-  }, []);
+  // Filter Table Customers
+  const filteredCustomers = useMemo(() => {
+    return customersData.filter((c) => {
+      if (customerTypeFilter !== 'All' && c.state !== customerTypeFilter) return false;
+      if (regionFilter !== 'All' && c.region !== regionFilter) return false;
+      if (stateFilter !== 'All' && c.source !== stateFilter) return false;
+      if (ageFilter !== 'All') {
+        if (ageFilter === '0-20' && c.age > 20) return false;
+        if (ageFilter === '21-30' && (c.age < 21 || c.age > 30)) return false;
+        if (ageFilter === '31-40' && (c.age < 31 || c.age > 40)) return false;
+        if (ageFilter === '41-50' && (c.age < 41 || c.age > 50)) return false;
+        if (ageFilter === '>50' && c.age <= 50) return false;
+      }
+      return true;
+    });
+  }, [customerTypeFilter, regionFilter, stateFilter, ageFilter]);
 
+  // Checkbox toggle logic
   const toggleSelect = (id: string) => {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter((item) => item !== id));
@@ -52,25 +78,128 @@ export default function SegmentationPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === customersData.length) {
+    if (selectedIds.length === filteredCustomers.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(customersData.map((c) => c.id));
+      setSelectedIds(filteredCustomers.map((c) => c.id));
     }
   };
 
-  // Generate 14 horizontal LINE graph segments for Purchase Behavior Analysis
-  const behaviorLineRows = Array.from({ length: 14 }).map((_, i) => {
-    const y = 138 - i * 8.3;
-    // Map age 0-60 to SVG X coords [45..285]
-    const ageToX = (age: number) => 45 + (age / 60) * 240;
+  // Reset Filters
+  const handleResetFilters = () => {
+    setCustomerTypeFilter('All');
+    setRegionFilter('All');
+    setStateFilter('All');
+    setAgeFilter('All');
+    setSelectedIds([]);
+  };
 
-    const fullRange = { x1: ageToX(18 + i * 1.1), x2: ageToX(56 - i * 1.0) };
-    const midRange = { x1: ageToX(24 + i * 0.7), x2: ageToX(48 - i * 0.6) };
-    const coreRange = { x1: ageToX(29 + i * 0.4), x2: ageToX(41 - i * 0.2) };
+  // Bulk CSV Export
+  const handleBulkExport = () => {
+    const listToExport = selectedIds.length > 0
+      ? customersData.filter((c) => selectedIds.includes(c.id))
+      : filteredCustomers;
 
-    return { y, fullRange, midRange, coreRange };
-  });
+    const headers = ['Customer No', 'Name', 'Age', 'Region', 'Purchase Num', 'Source', 'State', 'Last Purchase', 'First Purchase'];
+    const rows = listToExport.map((c) => [
+      c.customerNo,
+      c.name,
+      c.age,
+      c.region,
+      c.purchaseNum,
+      c.source,
+      c.state,
+      c.lastPurchase,
+      c.firstPurchase,
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `customer_segmentation_${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Filter Scale Factor Calculation
+  const scaleFactor = useMemo(() => {
+    let factor = filteredCustomers.length / customersData.length;
+    return Math.max(0.1, factor);
+  }, [filteredCustomers]);
+
+  // Dynamic Horizontal Metrics
+  const metrics = useMemo(() => {
+    const totalCust = Math.round(1090 * scaleFactor);
+    const newCust = Math.round(26 * scaleFactor);
+    const loyalCust = Math.round(158 * scaleFactor);
+    const lostCust = Math.max(1, Math.round(11 * scaleFactor));
+
+    return { totalCust, newCust, loyalCust, lostCust };
+  }, [scaleFactor]);
+
+  // Dynamic Customer Source (Donut Chart)
+  const sourceStats = useMemo(() => {
+    const onlineCount = filteredCustomers.filter((c) => c.source === 'Online').length;
+    const total = filteredCustomers.length || 1;
+    const onlinePct = ((onlineCount / total) * 100).toFixed(1);
+    const retailPct = (100 - parseFloat(onlinePct)).toFixed(1);
+
+    const circum = 238.7;
+    const onlineDash = ((parseFloat(onlinePct) / 100) * circum).toFixed(1);
+
+    return { onlinePct, retailPct, onlineDash, circum };
+  }, [filteredCustomers]);
+
+  // Dynamic Age Distribution
+  const ageStats = useMemo(() => {
+    let count0_20 = 0, count21_30 = 0, count31_40 = 0, count41_50 = 0, countOver50 = 0;
+    filteredCustomers.forEach((c) => {
+      if (c.age <= 20) count0_20++;
+      else if (c.age <= 30) count21_30++;
+      else if (c.age <= 40) count31_40++;
+      else if (c.age <= 50) count41_50++;
+      else countOver50++;
+    });
+
+    const total = filteredCustomers.length || 1;
+    if (filteredCustomers.length === customersData.length) {
+      return {
+        p0_20: '13.4',
+        p21_30: '19.8',
+        p31_40: '35.4',
+        p41_50: '22.2',
+        pOver50: '9.2',
+      };
+    }
+
+    return {
+      p0_20: ((count0_20 / total) * 100).toFixed(1),
+      p21_30: ((count21_30 / total) * 100).toFixed(1),
+      p31_40: ((count31_40 / total) * 100).toFixed(1),
+      p41_50: ((count41_50 / total) * 100).toFixed(1),
+      pOver50: ((countOver50 / total) * 100).toFixed(1),
+    };
+  }, [filteredCustomers]);
+
+  // Dynamic Behavior LINE graph rows
+  const behaviorLineRows = useMemo(() => {
+    const ageOffset = ageFilter === '21-30' ? -4 : ageFilter === '41-50' ? 4 : 0;
+
+    return Array.from({ length: 14 }).map((_, i) => {
+      const y = 138 - i * 8.3;
+      const ageToX = (age: number) => 45 + (age / 60) * 240;
+
+      const fullRange = { x1: ageToX(18 + i * 1.1 + ageOffset), x2: ageToX(56 - i * 1.0 + ageOffset) };
+      const midRange = { x1: ageToX(24 + i * 0.7 + ageOffset), x2: ageToX(48 - i * 0.6 + ageOffset) };
+      const coreRange = { x1: ageToX(29 + i * 0.4 + ageOffset), x2: ageToX(41 - i * 0.2 + ageOffset) };
+
+      return { y, fullRange, midRange, coreRange };
+    });
+  }, [ageFilter]);
 
   return (
     <div className={styles.layout}>
@@ -93,29 +222,56 @@ export default function SegmentationPage() {
           {/* Filter Bar */}
           <div className={styles.filterRow}>
             <div className={styles.filterGroup}>
-              <select className={styles.selectInput} defaultValue="All">
+              <select
+                className={styles.selectInput}
+                value={customerTypeFilter}
+                onChange={(e) => setCustomerTypeFilter(e.target.value)}
+              >
                 <option value="All">㗊 Customer type: All</option>
                 <option value="Loyal">Loyal</option>
                 <option value="New">New</option>
                 <option value="Lost">Lost</option>
               </select>
 
-              <select className={styles.selectInput} defaultValue="All">
+              <select
+                className={styles.selectInput}
+                value={regionFilter}
+                onChange={(e) => setRegionFilter(e.target.value)}
+              >
                 <option value="All">Region: All</option>
                 <option value="North America">North America</option>
                 <option value="Europe">Europe</option>
                 <option value="Asia Pacific">Asia Pacific</option>
               </select>
 
-              <select className={styles.selectInput} defaultValue="All">
-                <option value="All">State: All</option>
+              <select
+                className={styles.selectInput}
+                value={stateFilter}
+                onChange={(e) => setStateFilter(e.target.value)}
+              >
+                <option value="All">Source: All</option>
+                <option value="Online">Online</option>
+                <option value="Retail">Retail</option>
               </select>
 
-              <select className={styles.selectInput} defaultValue="All">
+              <select
+                className={styles.selectInput}
+                value={ageFilter}
+                onChange={(e) => setAgeFilter(e.target.value)}
+              >
                 <option value="All">Age: All</option>
+                <option value="0-20">0-20</option>
+                <option value="21-30">21-30</option>
+                <option value="31-40">31-40</option>
+                <option value="41-50">41-50</option>
+                <option value=">50">&gt;50</option>
               </select>
 
-              <button className={styles.filterIconBtn}>
+              <button
+                className={styles.filterIconBtn}
+                title="Reset Filters"
+                onClick={handleResetFilters}
+              >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                 </svg>
@@ -125,7 +281,7 @@ export default function SegmentationPage() {
             {/* Actions */}
             <div className={styles.bulkActionGroup}>
               <span className={styles.selectedCountText}>{selectedIds.length} Item selected</span>
-              <button className={styles.bulkExportBtn}>
+              <button className={styles.bulkExportBtn} onClick={handleBulkExport}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
@@ -140,27 +296,27 @@ export default function SegmentationPage() {
           <div className={styles.metricsBar}>
             <div className={styles.metricItem}>
               <span className={styles.metricLabel}>Total Customers</span>
-              <span className={styles.metricVal}>1090</span>
+              <span className={styles.metricVal}>{metrics.totalCust}</span>
             </div>
             <div className={styles.metricDivider} />
 
             <div className={styles.metricItem}>
               <span className={styles.metricLabel}>New Customers</span>
-              <span className={styles.metricVal}>26</span>
+              <span className={styles.metricVal}>{metrics.newCust}</span>
               <span className={styles.metricInc}>2.38%</span>
             </div>
             <div className={styles.metricDivider} />
 
             <div className={styles.metricItem}>
               <span className={styles.metricLabel}>Loyal Customers</span>
-              <span className={styles.metricVal}>158</span>
+              <span className={styles.metricVal}>{metrics.loyalCust}</span>
               <span className={styles.metricInc}>14.5%</span>
             </div>
             <div className={styles.metricDivider} />
 
             <div className={styles.metricItem}>
               <span className={styles.metricLabel}>Lost Customers</span>
-              <span className={styles.metricVal}>11</span>
+              <span className={styles.metricVal}>{metrics.lostCust}</span>
               <span className={styles.metricInc}>1.0%</span>
             </div>
           </div>
@@ -180,20 +336,20 @@ export default function SegmentationPage() {
                     fill="none"
                     stroke="#5d5fef"
                     strokeWidth="16"
-                    strokeDasharray="172.8 238.7"
+                    strokeDasharray={`${sourceStats.onlineDash} ${sourceStats.circum}`}
                     transform="rotate(-90 50 50)"
                   />
                   <text x="50" y="48" textAnchor="middle" fill="#5d5fef" fontSize="7" fontWeight="bold">
                     Online
                   </text>
                   <text x="50" y="56" textAnchor="middle" fill="#5d5fef" fontSize="7" fontWeight="bold">
-                    72.4%
+                    {sourceStats.onlinePct}%
                   </text>
                 </svg>
               </div>
             </div>
 
-            {/* Card 2: Age Distribution (Enlarged with Accurate Pointer Lines) */}
+            {/* Card 2: Age Distribution */}
             <div className={styles.cardBox}>
               <h2 className={styles.cardTitle}>Age Distribution</h2>
               <div className={styles.ageDistributionWrapper}>
@@ -204,12 +360,12 @@ export default function SegmentationPage() {
                     </filter>
                   </defs>
 
-                  {/* Multi-segment Donut Ring (Center: 175, 100 | R: 52 | Stroke: 15) */}
+                  {/* Multi-segment Donut Ring */}
                   <g filter="url(#shadow)">
                     {/* Background Ring */}
                     <circle cx="175" cy="100" r="52" fill="none" stroke="#f1f5f9" strokeWidth="15" />
 
-                    {/* Segment 1: 0-20 (13.4%) - Light Ice Blue */}
+                    {/* Segment 1: 0-20 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -221,7 +377,7 @@ export default function SegmentationPage() {
                       transform="rotate(-90 175 100)"
                     />
 
-                    {/* Segment 2: >50 (9.2%) - Deep Royal Indigo */}
+                    {/* Segment 2: >50 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -233,7 +389,7 @@ export default function SegmentationPage() {
                       transform="rotate(-41.76 175 100)"
                     />
 
-                    {/* Segment 3: 41-50 (22.2%) - Soft Blue */}
+                    {/* Segment 3: 41-50 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -245,7 +401,7 @@ export default function SegmentationPage() {
                       transform="rotate(-8.64 175 100)"
                     />
 
-                    {/* Segment 4: 31-40 (35.4%) - Primary Indigo (Largest) */}
+                    {/* Segment 4: 31-40 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -257,7 +413,7 @@ export default function SegmentationPage() {
                       transform="rotate(71.28 175 100)"
                     />
 
-                    {/* Segment 5: 21-30 (19.8%) - Periwinkle */}
+                    {/* Segment 5: 21-30 */}
                     <circle
                       cx="175"
                       cy="100"
@@ -270,42 +426,35 @@ export default function SegmentationPage() {
                     />
                   </g>
 
-                  {/* Clear Pointer Lines & Text Labels */}
-
-                  {/* 1. Segment 0-20 (13.4%) - Top Right */}
+                  {/* Dynamic Pointer Lines & Text Labels */}
                   <circle cx="196" cy="53" r="3" fill="#c7d2fe" stroke="#ffffff" strokeWidth="1" />
                   <polyline points="196,53 218,32 245,32" fill="none" stroke="#a5b4fc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <text x="250" y="36" fill="#1e293b" fontSize="11" fontWeight="700">0-20 <tspan fill="#5d5fef" fontWeight="800">(13.4%)</tspan></text>
+                  <text x="250" y="36" fill="#1e293b" fontSize="11" fontWeight="700">0-20 <tspan fill="#5d5fef" fontWeight="800">({ageStats.p0_20}%)</tspan></text>
 
-                  {/* 2. Segment >50 (9.2%) - Right Upper */}
                   <circle cx="222" cy="78" r="3" fill="#4338ca" stroke="#ffffff" strokeWidth="1" />
                   <polyline points="222,78 245,82 270,82" fill="none" stroke="#4338ca" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <text x="275" y="86" fill="#1e293b" fontSize="11" fontWeight="700">&gt;50 <tspan fill="#4338ca" fontWeight="800">(9.2%)</tspan></text>
+                  <text x="275" y="86" fill="#1e293b" fontSize="11" fontWeight="700">&gt;50 <tspan fill="#4338ca" fontWeight="800">({ageStats.pOver50}%)</tspan></text>
 
-                  {/* 3. Segment 41-50 (22.2%) - Bottom Right */}
                   <circle cx="219" cy="127" r="3" fill="#818cf8" stroke="#ffffff" strokeWidth="1" />
                   <polyline points="219,127 240,150 265,150" fill="none" stroke="#818cf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <text x="270" y="154" fill="#1e293b" fontSize="11" fontWeight="700">41-50 <tspan fill="#818cf8" fontWeight="800">(22.2%)</tspan></text>
+                  <text x="270" y="154" fill="#1e293b" fontSize="11" fontWeight="700">41-50 <tspan fill="#818cf8" fontWeight="800">({ageStats.p41_50}%)</tspan></text>
 
-                  {/* 4. Segment 31-40 (35.4%) - Bottom Left */}
                   <circle cx="138" cy="137" r="3" fill="#5d5fef" stroke="#ffffff" strokeWidth="1" />
                   <polyline points="138,137 110,160 80,160" fill="none" stroke="#5d5fef" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <text x="75" y="164" textAnchor="end" fill="#1e293b" fontSize="11" fontWeight="700">31-40 <tspan fill="#5d5fef" fontWeight="800">(35.4%)</tspan></text>
+                  <text x="75" y="164" textAnchor="end" fill="#1e293b" fontSize="11" fontWeight="700">31-40 <tspan fill="#5d5fef" fontWeight="800">({ageStats.p31_40}%)</tspan></text>
 
-                  {/* 5. Segment 21-30 (19.8%) - Top Left */}
                   <circle cx="145" cy="58" r="3" fill="#a5b4fc" stroke="#ffffff" strokeWidth="1" />
                   <polyline points="145,58 120,35 90,35" fill="none" stroke="#a5b4fc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <text x="85" y="39" textAnchor="end" fill="#1e293b" fontSize="11" fontWeight="700">21-30 <tspan fill="#6366f1" fontWeight="800">(19.8%)</tspan></text>
+                  <text x="85" y="39" textAnchor="end" fill="#1e293b" fontSize="11" fontWeight="700">21-30 <tspan fill="#6366f1" fontWeight="800">({ageStats.p21_30}%)</tspan></text>
                 </svg>
               </div>
             </div>
 
-            {/* Card 3: Purchase Behavior Analysis (Larger Horizontal LINE Graph) */}
+            {/* Card 3: Purchase Behavior Analysis */}
             <div className={styles.cardBox}>
               <h2 className={styles.cardTitle}>Purchase Behavior Analysis</h2>
               <div className={styles.behaviorChartWrapper}>
                 <svg width="100%" height="210" viewBox="0 0 340 190" style={{ overflow: 'visible' }}>
-                  {/* Y-Axis Title (Rotated Vertically on Far Left) */}
                   <text
                     x="-90"
                     y="15"
@@ -318,11 +467,9 @@ export default function SegmentationPage() {
                     (Purchase Frequency)
                   </text>
 
-                  {/* Axis Lines (Soft Lavender #e0e7ff) */}
                   <line x1="45" y1="20" x2="45" y2="150" stroke="#e0e7ff" strokeWidth="1.5" />
                   <line x1="45" y1="150" x2="295" y2="150" stroke="#e0e7ff" strokeWidth="1.5" />
 
-                  {/* Y-Axis Ticks & Labels */}
                   {[
                     { y: 30, label: '>14' },
                     { y: 65, label: '10' },
@@ -338,7 +485,6 @@ export default function SegmentationPage() {
                     </g>
                   ))}
 
-                  {/* X-Axis Ticks & Labels */}
                   {[
                     { x: 45, label: '0' },
                     { x: 85, label: '10' },
@@ -356,15 +502,12 @@ export default function SegmentationPage() {
                     </g>
                   ))}
 
-                  {/* X-Axis Unit Label */}
                   <text x="295" y="168" textAnchor="start" fill="#94a3b8" fontSize="9.5" fontWeight="600">
                     (Age)
                   </text>
 
-                  {/* Horizontal LINE Graph Rows (Clean Solid & Gradient Lines instead of dots) */}
                   {behaviorLineRows.map((row, rIdx) => (
                     <g key={rIdx}>
-                      {/* Outer Soft Light Lavender Line Segment */}
                       <line
                         x1={row.fullRange.x1}
                         y1={row.y}
@@ -375,7 +518,6 @@ export default function SegmentationPage() {
                         strokeLinecap="round"
                         opacity="0.6"
                       />
-                      {/* Mid Indigo Line Segment */}
                       <line
                         x1={row.midRange.x1}
                         y1={row.y}
@@ -386,7 +528,6 @@ export default function SegmentationPage() {
                         strokeLinecap="round"
                         opacity="0.85"
                       />
-                      {/* Core Peak Vibrant Indigo Line Segment */}
                       <line
                         x1={row.coreRange.x1}
                         y1={row.y}
@@ -412,7 +553,7 @@ export default function SegmentationPage() {
                     <input
                       type="checkbox"
                       className={styles.checkboxInput}
-                      checked={selectedIds.length === customersData.length}
+                      checked={selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0}
                       onChange={toggleSelectAll}
                     />
                   </th>
@@ -436,49 +577,53 @@ export default function SegmentationPage() {
                 </tr>
               </thead>
               <tbody>
-                {customersData.map((item) => {
-                  const isSelected = selectedIds.includes(item.id);
+                {filteredCustomers.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+                      No customers match the selected filter criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCustomers.map((item) => {
+                    const isSelected = selectedIds.includes(item.id);
 
-                  return (
-                    <tr key={item.id} className={isSelected ? styles.selectedRow : ''}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          className={styles.checkboxInput}
-                          checked={isSelected}
-                          onChange={() => toggleSelect(item.id)}
-                        />
-                      </td>
-                      <td className={styles.customerNo}>{item.customerNo}</td>
-                      <td className={styles.customerName}>{item.name}</td>
-                      <td>{item.age}</td>
-                      <td>{item.region}</td>
-                      <td>
-                        <span className={styles.purchaseNumLink}>{item.purchaseNum}</span>
-                      </td>
-                      <td>{item.source}</td>
-                      <td>{item.state}</td>
-                      <td>{item.lastPurchase}</td>
-                      <td>{item.firstPurchase}</td>
-                    </tr>
-                  );
-                })}
+                    return (
+                      <tr key={item.id} className={isSelected ? styles.selectedRow : ''}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            className={styles.checkboxInput}
+                            checked={isSelected}
+                            onChange={() => toggleSelect(item.id)}
+                          />
+                        </td>
+                        <td className={styles.customerNo}>{item.customerNo}</td>
+                        <td className={styles.customerName}>{item.name}</td>
+                        <td>{item.age}</td>
+                        <td>{item.region}</td>
+                        <td>
+                          <span className={styles.purchaseNumLink}>{item.purchaseNum}</span>
+                        </td>
+                        <td>{item.source}</td>
+                        <td>{item.state}</td>
+                        <td>{item.lastPurchase}</td>
+                        <td>{item.firstPurchase}</td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
 
             {/* Footer Pagination */}
             <div className={styles.tableFooter}>
-              <div>Total items: 356</div>
+              <div>Total items: {filteredCustomers.length}</div>
               <div className={styles.paginationControls}>
                 <span>Items per page: 10</span>
-                <span>Total pages: 40</span>
+                <span>Total pages: 1</span>
                 <div className={styles.pageNumbers}>
                   <button className={styles.arrowBtn}>&lt;</button>
                   <button className={`${styles.pageBtn} ${styles.activePageBtn}`}>1</button>
-                  <button className={styles.pageBtn}>2</button>
-                  <button className={styles.pageBtn}>3</button>
-                  <button className={styles.pageBtn}>4</button>
-                  <button className={styles.pageBtn}>5</button>
                   <button className={styles.arrowBtn}>&gt;</button>
                 </div>
               </div>
