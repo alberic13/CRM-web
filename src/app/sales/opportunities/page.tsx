@@ -37,7 +37,7 @@ const formatDateForExcelCsv = (dateInput: any): string => {
 
 export default function OpportunitiesPage() {
   const [user, setUser] = useState<any>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>(['113', '114']);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
 
   // Filter States
