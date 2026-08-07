@@ -1,9 +1,8 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f6f8fd;
+  background-color: #f8fafc;
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #1e293b;
 }
 
 .mainContent {
@@ -14,7 +13,7 @@
 }
 
 .contentBody {
-  padding: 28px 36px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -30,24 +29,29 @@
 
 .titleGroup {
   display: flex;
-  align-items: baseline;
-  gap: 16px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .pageTitle {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   color: #0f172a;
   margin: 0;
-  letter-spacing: -0.3px;
 }
 
 .breadcrumbs {
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .primaryBtn {
@@ -56,7 +60,7 @@
   color: #ffffff;
   border: none;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -64,7 +68,6 @@
   gap: 8px;
   box-shadow: 0 4px 14px rgba(93, 95, 239, 0.3);
   transition: all 0.2s ease;
-  letter-spacing: 0.3px;
 }
 
 .primaryBtn:hover {
@@ -72,9 +75,25 @@
   transform: translateY(-1px);
 }
 
+.secondaryBtn {
+  padding: 10px 18px;
+  background: #f1f3fe;
+  color: #5d5fef;
+  border: 1px solid #e0e7ff;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background: #e5e9fe;
+}
+
 .cardBox {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px;
   border: 1px solid #f1f5f9;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
@@ -98,70 +117,26 @@
 }
 
 .selectInput {
-  padding: 8px 14px;
+  padding: 10px 14px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: 12px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: #475569;
+  color: #334155;
   outline: none;
   cursor: pointer;
 }
 
 .searchInput {
-  padding: 8px 14px;
-  width: 220px;
-  background: #ffffff;
+  padding: 10px 16px;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 13px;
-  outline: none;
+  border-radius: 12px;
+  font-size: 13.5px;
   color: #1e293b;
-}
-
-.filterIconBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #5d5fef;
-  cursor: pointer;
-}
-
-.bulkActionGroup {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.selectedCountText {
-  font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.bulkBtn {
-  padding: 8px 16px;
-  background: #f1f3fe;
-  color: #5d5fef;
-  border: none;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.bulkBtn:hover {
-  background: #e5e9fe;
+  width: 240px;
+  outline: none;
 }
 
 .table {
@@ -173,68 +148,29 @@
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  color: #475569;
-  padding: 14px 12px;
+  color: #94a3b8;
+  padding: 14px 16px;
   border-bottom: 1px solid #f1f5f9;
   background-color: #f8fafc;
 }
 
-.sortHeader {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
-
-.sortIcon {
-  font-size: 10px;
-  color: #94a3b8;
-}
-
 .table td {
-  padding: 14px 12px;
-  font-size: 13.5px;
+  padding: 16px;
+  font-size: 14px;
   color: #334155;
   border-bottom: 1px solid #f8fafc;
 }
 
-.selectedRow {
-  background-color: #f5f6ff !important;
-}
-
-.checkboxInput {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #5d5fef;
-}
-
-.oppNo {
+.clientName {
   font-weight: 700;
   color: #5d5fef;
-  text-decoration: underline;
   cursor: pointer;
 }
 
-.oppName {
-  font-weight: 600;
-  color: #0f172a;
-}
-
-/* Badges */
-.badgePending {
-  background: #fffbeb;
-  color: #b45309;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 12px;
-  display: inline-block;
-}
-
-.badgeWon {
+.tierEnterprise {
   background: #f0fdf4;
   color: #16a34a;
+  border: 1px solid #bbf7d0;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 700;
@@ -242,9 +178,10 @@
   display: inline-block;
 }
 
-.badgeInProgress {
-  background: #f0f9ff;
-  color: #0284c7;
+.tierMidMarket {
+  background: #f0f4ff;
+  color: #5d5fef;
+  border: 1px solid #c7d2fe;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 700;
@@ -252,9 +189,10 @@
   display: inline-block;
 }
 
-.badgeLost {
-  background: #fef2f2;
-  color: #dc2626;
+.tierSmb {
+  background: #fdf4ff;
+  color: #c026d3;
+  border: 1px solid #f5d0fe;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 700;
@@ -262,12 +200,6 @@
   display: inline-block;
 }
 
-.revenueText {
-  font-weight: 600;
-  color: #0f172a;
-}
-
-/* Action Icon Buttons */
 .actionGroup {
   display: flex;
   align-items: center;
@@ -321,47 +253,6 @@
   padding-top: 16px;
   font-size: 13px;
   color: #64748b;
-}
-
-.paginationControls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.pageNumbers {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pageBtn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #5d5fef;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-.activePageBtn {
-  background: #f0f1ff;
-  color: #5d5fef;
-  font-weight: 800;
-}
-
-.arrowBtn {
-  color: #94a3b8;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
 }
 
 /* Modal Overlay */
