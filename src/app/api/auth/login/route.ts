@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { loginSchema } from '@/lib/validations/auth';
 import bcrypt from 'bcrypt';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

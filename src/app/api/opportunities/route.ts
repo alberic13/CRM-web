@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const createOpportunitySchema = z.object({
   name: z.string().min(1, 'Opportunity name is required'),
   status: z.enum(['Pending', 'Won', 'InProgress', 'Lost']),
