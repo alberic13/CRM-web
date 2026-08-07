@@ -1,12 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import styles from './reports.module.css';
 
+interface TrendItem {
+  month: string;
+  volume: number;
+  revenue: number;
+}
+
 export default function ReportsPage() {
   const [user, setUser] = useState<any>(null);
+
+  // Filter States
+  const [periodFilter, setPeriodFilter] = useState('Last 1 Year');
+  const [productFilter, setProductFilter] = useState('ALL');
+  const [regionFilter, setRegionFilter] = useState('ALL');
+  const [customerFilter, setCustomerFilter] = useState('ALL');
+  const [stageFilter, setStageFilter] = useState('ALL');
+
+  // Country Selection State
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -16,9 +32,57 @@ export default function ReportsPage() {
       });
   }, []);
 
+  // Filter Scale Factor Calculation
+  const scaleFactor = useMemo(() => {
+    let factor = 1.0;
+    if (periodFilter === 'Last 6 Months') factor *= 0.55;
+    else if (periodFilter === 'Last 3 Months') factor *= 0.28;
+    else if (periodFilter === 'Last 1 Month') factor *= 0.1;
+
+    if (productFilter === 'Software SaaS') factor *= 0.45;
+    else if (productFilter === 'Hardware Equipment') factor *= 0.35;
+    else if (productFilter === 'Consulting Services') factor *= 0.2;
+
+    if (regionFilter === 'North America') factor *= 0.5;
+    else if (regionFilter === 'Europe') factor *= 0.3;
+    else if (regionFilter === 'Asia Pacific') factor *= 0.2;
+
+    if (customerFilter === 'Enterprise') factor *= 0.6;
+    else if (customerFilter === 'Mid-Market') factor *= 0.3;
+
+    if (stageFilter === 'Won') factor *= 0.7;
+    else if (stageFilter === 'In Progress') factor *= 0.25;
+
+    if (selectedCountry === 'US') factor *= 0.6;
+    else if (selectedCountry === 'Canada') factor *= 0.4;
+    else if (selectedCountry === 'China') factor *= 0.3;
+    else if (selectedCountry === 'UK') factor *= 0.2;
+    else if (selectedCountry === 'France') factor *= 0.15;
+
+    return Math.max(0.05, factor);
+  }, [periodFilter, productFilter, regionFilter, customerFilter, stageFilter, selectedCountry]);
+
+  // Dynamic KPI Metrics
+  const metrics = useMemo(() => {
+    const totalSales = Math.round(1800000 * scaleFactor);
+    const totalQty = Math.round(4920 * scaleFactor);
+    const avgSales = Math.round(totalSales / 12);
+    const avgQty = Math.round(totalQty / 12);
+
+    return {
+      totalSales,
+      totalQty,
+      avgSales,
+      avgQty,
+      salesInc: scaleFactor > 0.4 ? 1.93 : 3.12,
+      qtyInc: scaleFactor > 0.4 ? -0.62 : 1.45,
+    };
+  }, [scaleFactor]);
+
+  // Dynamic Trend Data
   const months = ['4/23', '5/23', '6/23', '7/23', '8/23', '9/23', '10/23', '11/23', '12/23', '1/24', '2/24', '3/24'];
 
-  const trendData = [
+  const baseTrendData = [
     { month: '4/23', volume: 290, revenue: 390 },
     { month: '5/23', volume: 210, revenue: 300 },
     { month: '6/23', volume: 160, revenue: 380 },
@@ -33,29 +97,115 @@ export default function ReportsPage() {
     { month: '3/24', volume: 200, revenue: 480 },
   ];
 
-  const countryStats = [
-    { flag: '/images/flagUS.png', name: 'US', pct: 60, color: '#046a38' },
-    { flag: '/images/flagCanada.png', name: 'Canada', pct: 40, color: '#059669' },
-    { flag: '/images/flagChina.png', name: 'China', pct: 30, color: '#10b981' },
-    { flag: '/images/flagUK.png', name: 'UK', pct: 20, color: '#34d399' },
-    { flag: '/images/flagFrance.png', name: 'France', pct: 10, color: '#6ee7b7' },
-  ];
+  const trendData: TrendItem[] = useMemo(() => {
+    return baseTrendData.map((d) => ({
+      month: d.month,
+      volume: Math.max(10, Math.round(d.volume * Math.min(1.5, scaleFactor * 1.2))),
+      revenue: Math.max(20, Math.round(d.revenue * Math.min(1.5, scaleFactor * 1.1))),
+    }));
+  }, [scaleFactor]);
 
-  const productsCol1 = [
-    { rank: 'TOP.1', name: 'Product name 1', qty: 2647 },
-    { rank: 'TOP.2', name: 'Product 2', qty: 2280 },
-    { rank: 'TOP.3', name: 'Product 3', qty: 1849 },
-    { rank: 'TOP.4', name: 'Product 4', qty: 1352 },
-    { rank: 'TOP.5', name: 'Product 5', qty: 835 },
-  ];
+  // Dynamic Country Regional Distribution
+  const countryStats = useMemo(() => {
+    if (regionFilter === 'North America') {
+      return [
+        { flag: '/images/flagUS.png', name: 'US', pct: 75, color: '#046a38' },
+        { flag: '/images/flagCanada.png', name: 'Canada', pct: 25, color: '#059669' },
+      ];
+    } else if (regionFilter === 'Europe') {
+      return [
+        { flag: '/images/flagUK.png', name: 'UK', pct: 55, color: '#34d399' },
+        { flag: '/images/flagFrance.png', name: 'France', pct: 45, color: '#6ee7b7' },
+      ];
+    } else if (regionFilter === 'Asia Pacific') {
+      return [
+        { flag: '/images/flagChina.png', name: 'China', pct: 80, color: '#10b981' },
+      ];
+    }
 
-  const productsCol2 = [
-    { rank: 'TOP.6', name: 'Product 6', qty: 647 },
-    { rank: 'TOP.7', name: 'Product 7', qty: 635 },
-    { rank: 'TOP.8', name: 'Product 8', qty: 578 },
-    { rank: 'TOP.9', name: 'Product 9', qty: 509 },
-    { rank: 'TOP.10', name: 'Product 10', qty: 356 },
-  ];
+    return [
+      { flag: '/images/flagUS.png', name: 'US', pct: 60, color: '#046a38' },
+      { flag: '/images/flagCanada.png', name: 'Canada', pct: 40, color: '#059669' },
+      { flag: '/images/flagChina.png', name: 'China', pct: 30, color: '#10b981' },
+      { flag: '/images/flagUK.png', name: 'UK', pct: 20, color: '#34d399' },
+      { flag: '/images/flagFrance.png', name: 'France', pct: 10, color: '#6ee7b7' },
+    ];
+  }, [regionFilter]);
+
+  // Dynamic Donut Channel Percentages reacting to selectedCountry or regionFilter or productFilter
+  const channelPct = useMemo(() => {
+    if (selectedCountry === 'US') return { retail: 64.0, online: 36.0 };
+    if (selectedCountry === 'Canada') return { retail: 58.0, online: 42.0 };
+    if (selectedCountry === 'China') return { retail: 72.0, online: 28.0 };
+    if (selectedCountry === 'UK') return { retail: 55.0, online: 45.0 };
+    if (selectedCountry === 'France') return { retail: 48.0, online: 52.0 };
+
+    if (regionFilter === 'Europe') return { retail: 55.0, online: 45.0 };
+    if (regionFilter === 'North America') return { retail: 68.0, online: 32.0 };
+    if (regionFilter === 'Asia Pacific') return { retail: 72.0, online: 28.0 };
+    if (productFilter === 'Software SaaS') return { retail: 72.5, online: 27.5 };
+    if (productFilter === 'Hardware Equipment') return { retail: 55.0, online: 45.0 };
+
+    return { retail: 61.8, online: 38.2 };
+  }, [selectedCountry, regionFilter, productFilter]);
+
+  // Donut StrokeDasharray calculation for Retail % vs Online %
+  const donutDash = useMemo(() => {
+    const circum = 2 * Math.PI * 34; // ~213.6
+    const retailLength = (channelPct.retail / 100) * circum;
+    return `${retailLength.toFixed(1)} ${circum.toFixed(1)}`;
+  }, [channelPct]);
+
+  // Dynamic Product Preferences
+  const productsCol1 = useMemo(() => [
+    { rank: 'TOP.1', name: 'Product name 1', qty: Math.round(2647 * scaleFactor) },
+    { rank: 'TOP.2', name: 'Product 2', qty: Math.round(2280 * scaleFactor) },
+    { rank: 'TOP.3', name: 'Product 3', qty: Math.round(1849 * scaleFactor) },
+    { rank: 'TOP.4', name: 'Product 4', qty: Math.round(1352 * scaleFactor) },
+    { rank: 'TOP.5', name: 'Product 5', qty: Math.round(835 * scaleFactor) },
+  ], [scaleFactor]);
+
+  const productsCol2 = useMemo(() => [
+    { rank: 'TOP.6', name: 'Product 6', qty: Math.round(647 * scaleFactor) },
+    { rank: 'TOP.7', name: 'Product 7', qty: Math.round(635 * scaleFactor) },
+    { rank: 'TOP.8', name: 'Product 8', qty: Math.round(578 * scaleFactor) },
+    { rank: 'TOP.9', name: 'Product 9', qty: Math.round(509 * scaleFactor) },
+    { rank: 'TOP.10', name: 'Product 10', qty: Math.round(356 * scaleFactor) },
+  ], [scaleFactor]);
+
+  // Reset Filters & Country Selection
+  const handleResetFilters = () => {
+    setPeriodFilter('Last 1 Year');
+    setProductFilter('ALL');
+    setRegionFilter('ALL');
+    setCustomerFilter('ALL');
+    setStageFilter('ALL');
+    setSelectedCountry(null);
+  };
+
+  // CSV Export
+  const handleExportCsv = () => {
+    const headers = ['Metric', 'Value', 'Growth %'];
+    const rows = [
+      ['Total Sales', `$${metrics.totalSales.toLocaleString()}`, `${metrics.salesInc}%`],
+      ['Total Sales Quantity', `${metrics.totalQty.toLocaleString()} units`, `${metrics.qtyInc}%`],
+      ['Average Sales', `$${metrics.avgSales.toLocaleString()}`, `${metrics.salesInc}%`],
+      ['Average Sales Quantity', `${metrics.avgQty.toLocaleString()} units`, `${metrics.qtyInc}%`],
+      ['Filter Region', regionFilter, '-'],
+      ['Selected Country', selectedCountry || 'All', '-'],
+    ];
+
+    const csvString = '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\r\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `sales_report_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className={styles.layout}>
@@ -65,7 +215,7 @@ export default function ReportsPage() {
         <Header user={user} />
 
         <main className={styles.contentBody}>
-          {/* Top Title & Header */}
+          {/* Top Title & Header Buttons */}
           <div className={styles.topRow}>
             <div className={styles.titleGroup}>
               <h1 className={styles.pageTitle}>Sales</h1>
@@ -74,7 +224,7 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <button className={styles.exportBtn}>
+            <button className={styles.exportBtn} onClick={handleExportCsv}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="7 10 12 15 17 10" />
@@ -86,27 +236,72 @@ export default function ReportsPage() {
 
           {/* Filter Bar */}
           <div className={styles.filterRow}>
-            <select className={styles.selectInput} defaultValue="Last 1 Year">
+            <select
+              className={styles.selectInput}
+              value={periodFilter}
+              onChange={(e) => setPeriodFilter(e.target.value)}
+            >
               <option value="Last 1 Year">📅 Last 1 Year</option>
+              <option value="Last 6 Months">📅 Last 6 Months</option>
+              <option value="Last 3 Months">📅 Last 3 Months</option>
+              <option value="Last 1 Month">📅 Last 1 Month</option>
             </select>
 
-            <select className={styles.selectInput} defaultValue="ALL">
+            <select
+              className={styles.selectInput}
+              value={productFilter}
+              onChange={(e) => setProductFilter(e.target.value)}
+            >
               <option value="ALL">㗊 ALL (Product Type)</option>
+              <option value="Software SaaS">Software SaaS</option>
+              <option value="Hardware Equipment">Hardware Equipment</option>
+              <option value="Consulting Services">Consulting Services</option>
+              <option value="Maintenance">Maintenance</option>
             </select>
 
-            <select className={styles.selectInput} defaultValue="ALL">
+            <select
+              className={styles.selectInput}
+              value={regionFilter}
+              onChange={(e) => {
+                setRegionFilter(e.target.value);
+                setSelectedCountry(null);
+              }}
+            >
               <option value="ALL">🌐 Region: ALL</option>
+              <option value="North America">North America</option>
+              <option value="Europe">Europe</option>
+              <option value="Asia Pacific">Asia Pacific</option>
+              <option value="Latin America">Latin America</option>
             </select>
 
-            <select className={styles.selectInput} defaultValue="ALL">
+            <select
+              className={styles.selectInput}
+              value={customerFilter}
+              onChange={(e) => setCustomerFilter(e.target.value)}
+            >
               <option value="ALL">👥 ALL (Customer Type)</option>
+              <option value="Enterprise">Enterprise Tier 1</option>
+              <option value="Mid-Market">Mid-Market</option>
+              <option value="Small Business (SMB)">Small Business (SMB)</option>
             </select>
 
-            <select className={styles.selectInput} defaultValue="ALL">
+            <select
+              className={styles.selectInput}
+              value={stageFilter}
+              onChange={(e) => setStageFilter(e.target.value)}
+            >
               <option value="ALL">☑ ALL (Sales Stage)</option>
+              <option value="Won">Won</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Pending">Pending</option>
+              <option value="Lost">Lost</option>
             </select>
 
-            <button className={styles.filterIconBtn}>
+            <button
+              className={styles.filterIconBtn}
+              title="Reset All Filters"
+              onClick={handleResetFilters}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="4" y1="6" x2="20" y2="6" />
                 <line x1="4" y1="12" x2="20" y2="12" />
@@ -121,36 +316,42 @@ export default function ReportsPage() {
               <div className={styles.miniCard}>
                 <span className={styles.miniCardTopLine} />
                 <span className={styles.miniCardLabel}>Total Sales</span>
-                <span className={styles.miniCardValue}>$1,800,000</span>
-                <span className={styles.badgePositive}>1.93%</span>
+                <span className={styles.miniCardValue}>${metrics.totalSales.toLocaleString()}</span>
+                <span className={styles.badgePositive}>{metrics.salesInc}%</span>
               </div>
 
               <div className={styles.miniCard}>
                 <span className={styles.miniCardTopLine} />
                 <span className={styles.miniCardLabel}>Total Sales Quantity</span>
-                <span className={styles.miniCardValue}>4920(units)</span>
-                <span className={styles.badgeNegative}>-0.62%</span>
+                <span className={styles.miniCardValue}>{metrics.totalQty.toLocaleString()}(units)</span>
+                <span className={metrics.qtyInc >= 0 ? styles.badgePositive : styles.badgeNegative}>
+                  {metrics.qtyInc}%
+                </span>
               </div>
 
               <div className={styles.miniCard}>
                 <span className={styles.miniCardTopLine} />
                 <span className={styles.miniCardLabel}>Average Sales</span>
-                <span className={styles.miniCardValue}>$150,000</span>
-                <span className={styles.badgePositive}>1.93%</span>
+                <span className={styles.miniCardValue}>${metrics.avgSales.toLocaleString()}</span>
+                <span className={styles.badgePositive}>{metrics.salesInc}%</span>
               </div>
 
               <div className={styles.miniCard}>
                 <span className={styles.miniCardTopLine} />
                 <span className={styles.miniCardLabel}>Average Sales Quantity</span>
-                <span className={styles.miniCardValue}>410(units)</span>
-                <span className={styles.badgeNegative}>-0.62%</span>
+                <span className={styles.miniCardValue}>{metrics.avgQty.toLocaleString()}(units)</span>
+                <span className={metrics.qtyInc >= 0 ? styles.badgePositive : styles.badgeNegative}>
+                  {metrics.qtyInc}%
+                </span>
               </div>
             </div>
 
             {/* Sales Trend Combo Chart */}
             <div className={styles.cardBox}>
               <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Sales Trend</h2>
+                <h2 className={styles.cardTitle}>
+                  Sales Trend {selectedCountry ? `(${selectedCountry})` : ''}
+                </h2>
                 <div className={styles.legendGroup}>
                   <div className={styles.legendItem}>
                     <span className={styles.legendSquareBlue} />
@@ -276,18 +477,18 @@ export default function ReportsPage() {
           <div className={styles.cardBox}>
             <div className={styles.cardHeader}>
               <h2 className={styles.cardTitle}>
-                Sales channel distribution <span className={styles.cardSubtitle}>(Sales proportion)</span>
+                Sales channel distribution <span className={styles.cardSubtitle}>(Sales proportion {selectedCountry ? `- ${selectedCountry}` : ''})</span>
               </h2>
             </div>
 
             <div className={styles.channelMapGrid}>
-              {/* Donut Chart */}
+              {/* Interactive Donut Chart reacting directly to selectedCountry or regionFilter */}
               <div className={styles.channelContent}>
                 <svg width="220" height="200" viewBox="0 0 150 130">
-                  {/* Background Periwinkle Ring (Online 38.2%) */}
+                  {/* Background Periwinkle Ring (Online %) */}
                   <circle cx="65" cy="60" r="34" fill="none" stroke="#c7d2fe" strokeWidth="18" />
 
-                  {/* Primary Indigo Ring (Retail 61.8%) */}
+                  {/* Primary Indigo Ring (Retail %) */}
                   <circle
                     cx="65"
                     cy="60"
@@ -295,11 +496,11 @@ export default function ReportsPage() {
                     fill="none"
                     stroke="#5d5fef"
                     strokeWidth="18"
-                    strokeDasharray="131.9 213.6"
+                    strokeDasharray={donutDash}
                     transform="rotate(-90 65 60)"
                   />
 
-                  {/* Callout Pointer Line & Label for Online (38.2%) */}
+                  {/* Callout Pointer Line & Label for Online */}
                   <polyline
                     points="44,39 26,21 8,21"
                     fill="none"
@@ -310,10 +511,10 @@ export default function ReportsPage() {
                   />
                   <circle cx="44" cy="39" r="2.5" fill="#4338ca" />
                   <text x="8" y="14" textAnchor="start" fill="#4338ca" fontSize="10.5" fontWeight="800">
-                    38.2%
+                    {channelPct.online}%
                   </text>
 
-                  {/* Callout Pointer Line & Label for Retail (61.8%) - Shifted to Bottom Right */}
+                  {/* Callout Pointer Line & Label for Retail */}
                   <polyline
                     points="88,79 108,102 142,102"
                     fill="none"
@@ -324,18 +525,18 @@ export default function ReportsPage() {
                   />
                   <circle cx="88" cy="79" r="2.5" fill="#5d5fef" />
                   <text x="142" y="93" textAnchor="end" fill="#5d5fef" fontSize="10.5" fontWeight="800">
-                    61.8%
+                    {channelPct.retail}%
                   </text>
                 </svg>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', fontWeight: 600 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '10px', height: '3px', background: '#5d5fef' }} />
-                    <span>Retail</span>
+                    <span>Retail ({channelPct.retail}%)</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '10px', height: '3px', background: '#c7d2fe' }} />
-                    <span>Online</span>
+                    <span>Online ({channelPct.online}%)</span>
                   </div>
                 </div>
               </div>
@@ -349,16 +550,25 @@ export default function ReportsPage() {
                 />
 
                 <div className={styles.countryList}>
-                  {countryStats.map((c) => (
-                    <div key={c.name} className={styles.countryRow}>
-                      <img src={c.flag} alt={c.name} className={styles.flagIconImg} />
-                      <span className={styles.countryName}>{c.name}</span>
-                      <div className={styles.countryProgress}>
-                        <div className={styles.countryFill} style={{ width: `${c.pct}%`, backgroundColor: c.color }} />
+                  {countryStats.map((c) => {
+                    const isSelected = selectedCountry === c.name;
+
+                    return (
+                      <div
+                        key={c.name}
+                        className={`${styles.countryRow} ${isSelected ? styles.countryRowActive : ''}`}
+                        onClick={() => setSelectedCountry(isSelected ? null : c.name)}
+                        title={`Click to filter diagrams by ${c.name}`}
+                      >
+                        <img src={c.flag} alt={c.name} className={styles.flagIconImg} />
+                        <span className={styles.countryName}>{c.name}</span>
+                        <div className={styles.countryProgress}>
+                          <div className={styles.countryFill} style={{ width: `${c.pct}%`, backgroundColor: c.color }} />
+                        </div>
+                        <span className={styles.countryPctText}>{c.pct}%</span>
                       </div>
-                      <span className={styles.countryPctText}>{c.pct}%</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -369,7 +579,7 @@ export default function ReportsPage() {
             <h2 className={styles.cardTitle}>Customer Analysis</h2>
 
             <div className={styles.customerAnalysisContent}>
-              {/* Enlarged Left Pie Projection Diagram (380px x 180px) */}
+              {/* Pie Projection Diagram */}
               <div className={styles.pieDiagramArea}>
                 <svg width="380" height="180" viewBox="0 0 380 180">
                   {/* Large Pie Chart (r=60) */}
@@ -384,7 +594,7 @@ export default function ReportsPage() {
                   <circle cx="310" cy="95" r="30" fill="#5d5fef" />
                   <path d="M 310 95 L 280 100 A 30 30 0 0 1 298 68 Z" fill="#818cf8" />
 
-                  {/* Text Labels - Placed with ample spacing */}
+                  {/* Text Labels */}
                   <text x="82" y="82" fill="#ffffff" fontSize="10" fontWeight="bold">23.85%</text>
                   <text x="190" y="78" textAnchor="middle" fill="#5d5fef" fontSize="13" fontWeight="bold">New Customers</text>
                   <text x="310" y="92" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">Online</text>
@@ -400,77 +610,50 @@ export default function ReportsPage() {
                   <div className={styles.custStatCard}>
                     <span className={styles.custLabel}>Total Customers</span>
                     <div className={styles.custValRow}>
-                      <span className={styles.custVal}>109</span>
-                      <span className={styles.dividerLine} />
-                      <div className={styles.badgeTrendPositive}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                          <polyline points="17 6 23 6 23 12" />
-                        </svg>
-                        <span>1.2%</span>
-                      </div>
+                      <span className={styles.custVal}>1,200</span>
                     </div>
                   </div>
 
-                  {/* New Customers Card */}
                   <div className={styles.custStatCard}>
-                    <span className={styles.custLabel}>New Customers</span>
+                    <span className={styles.custLabel}>Customer Retention</span>
                     <div className={styles.custValRow}>
-                      <span className={styles.custVal}>26</span>
-                      <span className={styles.dividerLine} />
-                      <div className={styles.badgeTrendNegative}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-                          <polyline points="17 18 23 18 23 12" />
-                        </svg>
-                        <span>0.4%</span>
-                      </div>
+                      <span className={styles.custVal}>76.15%</span>
+                      <div className={styles.dividerLine} />
+                      <span className={styles.badgeTrendPositive}>▲ +1.2%</span>
                     </div>
                   </div>
 
-                  {/* Lost Customers Card */}
                   <div className={styles.custStatCard}>
-                    <span className={styles.custLabel}>Lost Customers</span>
+                    <span className={styles.custLabel}>New Acquisition</span>
                     <div className={styles.custValRow}>
-                      <span className={styles.custVal}>11</span>
-                      <span className={styles.dividerLine} />
-                      <div className={styles.badgeTrendNegative}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-                          <polyline points="17 18 23 18 23 12" />
-                        </svg>
-                        <span>0.7%</span>
-                      </div>
+                      <span className={styles.custVal}>23.85%</span>
+                      <div className={styles.dividerLine} />
+                      <span className={styles.badgeTrendPositive}>▲ +2.4%</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Legend Row */}
-                <div className={styles.barLegendRow}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className={styles.legendSquareMint} />
-                    <span>Repeat customers</span>
+                {/* Stacked Progress Bar */}
+                <div style={{ width: '100%' }}>
+                  <div className={styles.barLegendRow}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span className={styles.legendSquareMint} />
+                      <span>Repeat Purchasing (42.1%)</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span className={styles.legendSquareEmerald} />
+                      <span>One-time Purchasing (34.3%)</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span className={styles.legendSquareDarkGreen} />
+                      <span>Non-purchasing (23.6%)</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className={styles.legendSquareEmerald} />
-                    <span>One-time customers</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className={styles.legendSquareDarkGreen} />
-                    <span>Non-purchasing customers</span>
-                  </div>
-                </div>
 
-                {/* Stacked Progress Bar with Numbers Inside */}
-                <div className={styles.stackedProgressBar}>
-                  <div className={styles.segRepeat} style={{ width: '18.5%' }}>
-                    18.5%
-                  </div>
-                  <div className={styles.segOneTime} style={{ width: '53.9%' }}>
-                    53.9%
-                  </div>
-                  <div className={styles.segNonPurchasing} style={{ width: '27.6%' }}>
-                    27.6%
+                  <div className={styles.stackedProgressBar}>
+                    <div className={styles.segRepeat} style={{ width: '42.1%' }}>42.1%</div>
+                    <div className={styles.segOneTime} style={{ width: '34.3%' }}>34.3%</div>
+                    <div className={styles.segNonPurchasing} style={{ width: '23.6%' }}>23.6%</div>
                   </div>
                 </div>
               </div>
@@ -479,94 +662,37 @@ export default function ReportsPage() {
 
           {/* Row 4: Purchasing Customers & Product Preferences */}
           <div className={styles.row4Grid}>
+            {/* Purchasing Customer Top Ranking */}
             <div className={styles.cardBox}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>Purchasing customers</h2>
-                <div className={styles.legendGroup}>
-                  <div className={styles.legendItem}>
-                    <span style={{ width: '8px', height: '8px', background: '#a7f3d0' }} />
-                    <span>Total number of customers</span>
+              <h2 className={styles.cardTitle}>Purchasing Customers Top Ranking</h2>
+              <div className={styles.productPrefGrid}>
+                {productsCol1.map((p) => (
+                  <div key={p.rank} className={styles.prefItem}>
+                    <div className={styles.prefLeft}>
+                      <span className={styles.prefRank}>{p.rank}</span>
+                      <span className={styles.prefAvatar}>🏢</span>
+                      <span>{p.name}</span>
+                    </div>
+                    <span className={styles.prefQty}>{p.qty.toLocaleString()}</span>
                   </div>
-                  <div className={styles.legendItem}>
-                    <span style={{ width: '8px', height: '8px', background: '#059669' }} />
-                    <span>Monthly number of purchasing customers</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.comboChartContainer}>
-                <div className={styles.yAxis}>
-                  <span>1100</span>
-                  <span>800</span>
-                  <span>500</span>
-                  <span>200</span>
-                </div>
-                <div className={styles.chartBody}>
-                  <svg className={styles.svgCombo} viewBox="0 0 480 140" preserveAspectRatio="none">
-                    {[
-                      { x: 10, hTotal: 100, hMonthly: 40 },
-                      { x: 50, hTotal: 110, hMonthly: 55 },
-                      { x: 90, hTotal: 105, hMonthly: 48 },
-                      { x: 130, hTotal: 120, hMonthly: 42 },
-                      { x: 170, hTotal: 115, hMonthly: 62 },
-                      { x: 210, hTotal: 118, hMonthly: 58 },
-                      { x: 250, hTotal: 110, hMonthly: 65 },
-                      { x: 290, hTotal: 112, hMonthly: 52 },
-                      { x: 330, hTotal: 122, hMonthly: 49 },
-                      { x: 370, hTotal: 120, hMonthly: 60 },
-                      { x: 410, hTotal: 118, hMonthly: 45 },
-                      { x: 450, hTotal: 115, hMonthly: 38 },
-                    ].map((b, i) => (
-                      <g key={i}>
-                        <rect x={b.x} y={140 - b.hTotal} width="16" height={b.hTotal} fill="#a7f3d0" rx="2" />
-                        <rect x={b.x} y={140 - b.hMonthly} width="16" height={b.hMonthly} fill="#059669" rx="2" />
-                      </g>
-                    ))}
-                  </svg>
-                  <div className={styles.xAxis}>
-                    {months.map((m) => (
-                      <span key={m}>{m}</span>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Product Preferences TOP 10 */}
+            {/* Product Preferences Top Ranking */}
             <div className={styles.cardBox}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>
-                  Product preferences <span className={styles.cardSubtitle}>(Purchase Quantity)</span>
-                </h2>
-                <span style={{ fontSize: '11px', color: '#94a3b8', cursor: 'pointer' }}>View More &gt;</span>
-              </div>
-
+              <h2 className={styles.cardTitle}>Product Preferences Top Ranking</h2>
               <div className={styles.productPrefGrid}>
-                <div>
-                  {productsCol1.map((p) => (
-                    <div key={p.rank} className={styles.prefItem}>
-                      <div className={styles.prefLeft}>
-                        <span className={styles.prefRank}>{p.rank}</span>
-                        <div className={styles.prefAvatar}>📦</div>
-                        <span>{p.name}</span>
-                      </div>
-                      <span className={styles.prefQty}>({p.qty})</span>
+                {productsCol2.map((p) => (
+                  <div key={p.rank} className={styles.prefItem}>
+                    <div className={styles.prefLeft}>
+                      <span className={styles.prefRank}>{p.rank}</span>
+                      <span className={styles.prefAvatar}>📦</span>
+                      <span>{p.name}</span>
                     </div>
-                  ))}
-                </div>
-
-                <div>
-                  {productsCol2.map((p) => (
-                    <div key={p.rank} className={styles.prefItem}>
-                      <div className={styles.prefLeft}>
-                        <span className={styles.prefRank}>{p.rank}</span>
-                        <div className={styles.prefAvatar}>📦</div>
-                        <span>{p.name}</span>
-                      </div>
-                      <span className={styles.prefQty}>({p.qty})</span>
-                    </div>
-                  ))}
-                </div>
+                    <span className={styles.prefQty}>{p.qty.toLocaleString()}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
