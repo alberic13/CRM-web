@@ -105,6 +105,30 @@ export default function ReportsPage() {
     }));
   }, [scaleFactor]);
 
+  // Dynamic Purchasing Customers Monthly Stacked Bar Data
+  const purchasingCustData = useMemo(() => {
+    const baseCust = [
+      { month: '4/23', total: 800, purchasing: 370 },
+      { month: '5/23', total: 890, purchasing: 480 },
+      { month: '6/23', total: 890, purchasing: 410 },
+      { month: '7/23', total: 960, purchasing: 360 },
+      { month: '8/23', total: 960, purchasing: 540 },
+      { month: '9/23', total: 960, purchasing: 500 },
+      { month: '10/23', total: 920, purchasing: 570 },
+      { month: '11/23', total: 920, purchasing: 470 },
+      { month: '12/23', total: 1000, purchasing: 410 },
+      { month: '1/24', total: 1000, purchasing: 530 },
+      { month: '2/24', total: 1000, purchasing: 370 },
+      { month: '3/24', total: 1000, purchasing: 290 },
+    ];
+
+    return baseCust.map((d) => ({
+      month: d.month,
+      total: Math.max(100, Math.round(d.total * Math.min(1.5, scaleFactor * 1.05))),
+      purchasing: Math.max(50, Math.round(d.purchasing * Math.min(1.5, scaleFactor * 1.05))),
+    }));
+  }, [scaleFactor]);
+
   // Dynamic Country Regional Distribution
   const countryStats = useMemo(() => {
     if (regionFilter === 'North America') {
@@ -132,7 +156,7 @@ export default function ReportsPage() {
     ];
   }, [regionFilter]);
 
-  // Dynamic Donut Channel Percentages reacting to selectedCountry or regionFilter or productFilter
+  // Dynamic Donut Channel Percentages
   const channelPct = useMemo(() => {
     if (selectedCountry === 'US') return { retail: 64.0, online: 36.0 };
     if (selectedCountry === 'Canada') return { retail: 58.0, online: 42.0 };
@@ -149,23 +173,64 @@ export default function ReportsPage() {
     return { retail: 61.8, online: 38.2 };
   }, [selectedCountry, regionFilter, productFilter]);
 
-  // Donut StrokeDasharray calculation for Retail % vs Online %
+  // Donut StrokeDasharray calculation
   const donutDash = useMemo(() => {
     const circum = 2 * Math.PI * 34; // ~213.6
     const retailLength = (channelPct.retail / 100) * circum;
     return `${retailLength.toFixed(1)} ${circum.toFixed(1)}`;
   }, [channelPct]);
 
-  // Dynamic Product Preferences
-  const productsCol1 = useMemo(() => [
+  // Dynamic Customer Analysis Stats
+  const custAnalysisStats = useMemo(() => {
+    const totalCust = Math.round(1200 * scaleFactor);
+
+    let retention = 76.15;
+    if (customerFilter === 'Enterprise') retention = 84.50;
+    else if (customerFilter === 'Mid-Market') retention = 72.80;
+    else if (customerFilter === 'Small Business (SMB)') retention = 65.20;
+
+    if (selectedCountry === 'US') retention = 78.20;
+    else if (selectedCountry === 'China') retention = 81.10;
+
+    const acquisition = (100 - retention).toFixed(2);
+    const retentionStr = retention.toFixed(2);
+
+    let onlinePct = 95.0;
+    if (productFilter === 'Hardware Equipment') onlinePct = 82.0;
+    else if (productFilter === 'Software SaaS') onlinePct = 98.5;
+
+    let repeatPct = 42.1;
+    let oneTimePct = 34.3;
+    let nonPurchasingPct = 23.6;
+
+    if (customerFilter === 'Enterprise') {
+      repeatPct = 58.2;
+      oneTimePct = 28.5;
+      nonPurchasingPct = 13.3;
+    } else if (customerFilter === 'Small Business (SMB)') {
+      repeatPct = 31.0;
+      oneTimePct = 41.5;
+      nonPurchasingPct = 27.5;
+    }
+
+    return {
+      totalCust,
+      retentionStr,
+      acquisition,
+      onlinePct,
+      repeatPct,
+      oneTimePct,
+      nonPurchasingPct,
+    };
+  }, [scaleFactor, customerFilter, selectedCountry, productFilter]);
+
+  // Dynamic Product Preferences (10 Products)
+  const productsCol2 = useMemo(() => [
     { rank: 'TOP.1', name: 'Product name 1', qty: Math.round(2647 * scaleFactor) },
     { rank: 'TOP.2', name: 'Product 2', qty: Math.round(2280 * scaleFactor) },
     { rank: 'TOP.3', name: 'Product 3', qty: Math.round(1849 * scaleFactor) },
     { rank: 'TOP.4', name: 'Product 4', qty: Math.round(1352 * scaleFactor) },
     { rank: 'TOP.5', name: 'Product 5', qty: Math.round(835 * scaleFactor) },
-  ], [scaleFactor]);
-
-  const productsCol2 = useMemo(() => [
     { rank: 'TOP.6', name: 'Product 6', qty: Math.round(647 * scaleFactor) },
     { rank: 'TOP.7', name: 'Product 7', qty: Math.round(635 * scaleFactor) },
     { rank: 'TOP.8', name: 'Product 8', qty: Math.round(578 * scaleFactor) },
@@ -191,6 +256,9 @@ export default function ReportsPage() {
       ['Total Sales Quantity', `${metrics.totalQty.toLocaleString()} units`, `${metrics.qtyInc}%`],
       ['Average Sales', `$${metrics.avgSales.toLocaleString()}`, `${metrics.salesInc}%`],
       ['Average Sales Quantity', `${metrics.avgQty.toLocaleString()} units`, `${metrics.qtyInc}%`],
+      ['Total Customers', `${custAnalysisStats.totalCust.toLocaleString()}`, '-'],
+      ['Customer Retention', `${custAnalysisStats.retentionStr}%`, '+1.2%'],
+      ['New Acquisition', `${custAnalysisStats.acquisition}%`, '+2.4%'],
       ['Filter Region', regionFilter, '-'],
       ['Selected Country', selectedCountry || 'All', '-'],
     ];
@@ -482,7 +550,7 @@ export default function ReportsPage() {
             </div>
 
             <div className={styles.channelMapGrid}>
-              {/* Interactive Donut Chart reacting directly to selectedCountry or regionFilter */}
+              {/* Interactive Donut Chart */}
               <div className={styles.channelContent}>
                 <svg width="220" height="200" viewBox="0 0 150 130">
                   {/* Background Periwinkle Ring (Online %) */}
@@ -579,7 +647,7 @@ export default function ReportsPage() {
             <h2 className={styles.cardTitle}>Customer Analysis</h2>
 
             <div className={styles.customerAnalysisContent}>
-              {/* Pie Projection Diagram */}
+              {/* Dynamic Pie Projection Diagram */}
               <div className={styles.pieDiagramArea}>
                 <svg width="380" height="180" viewBox="0 0 380 180">
                   {/* Large Pie Chart (r=60) */}
@@ -595,29 +663,37 @@ export default function ReportsPage() {
                   <path d="M 310 95 L 280 100 A 30 30 0 0 1 298 68 Z" fill="#818cf8" />
 
                   {/* Text Labels */}
-                  <text x="82" y="82" fill="#ffffff" fontSize="10" fontWeight="bold">23.85%</text>
-                  <text x="190" y="78" textAnchor="middle" fill="#5d5fef" fontSize="13" fontWeight="bold">New Customers</text>
-                  <text x="310" y="92" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">Online</text>
-                  <text x="310" y="104" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">(95%)</text>
+                  <text x="82" y="82" fill="#ffffff" fontSize="10" fontWeight="bold">
+                    {custAnalysisStats.acquisition}%
+                  </text>
+                  <text x="190" y="78" textAnchor="middle" fill="#5d5fef" fontSize="13" fontWeight="bold">
+                    New Customers
+                  </text>
+                  <text x="310" y="92" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">
+                    Online
+                  </text>
+                  <text x="310" y="104" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">
+                    ({custAnalysisStats.onlinePct}%)
+                  </text>
                 </svg>
               </div>
 
-              {/* Right Side Column */}
+              {/* Right Side Column with Dynamic Stat Cards & Interactive Stacked Bar */}
               <div className={styles.rightAnalysisCol}>
-                {/* Top 3 Stat Cards Aligned Right */}
+                {/* Dynamic Stat Cards */}
                 <div className={styles.custMetricsGroup}>
                   {/* Total Customers Card */}
                   <div className={styles.custStatCard}>
                     <span className={styles.custLabel}>Total Customers</span>
                     <div className={styles.custValRow}>
-                      <span className={styles.custVal}>1,200</span>
+                      <span className={styles.custVal}>{custAnalysisStats.totalCust.toLocaleString()}</span>
                     </div>
                   </div>
 
                   <div className={styles.custStatCard}>
                     <span className={styles.custLabel}>Customer Retention</span>
                     <div className={styles.custValRow}>
-                      <span className={styles.custVal}>76.15%</span>
+                      <span className={styles.custVal}>{custAnalysisStats.retentionStr}%</span>
                       <div className={styles.dividerLine} />
                       <span className={styles.badgeTrendPositive}>▲ +1.2%</span>
                     </div>
@@ -626,56 +702,122 @@ export default function ReportsPage() {
                   <div className={styles.custStatCard}>
                     <span className={styles.custLabel}>New Acquisition</span>
                     <div className={styles.custValRow}>
-                      <span className={styles.custVal}>23.85%</span>
+                      <span className={styles.custVal}>{custAnalysisStats.acquisition}%</span>
                       <div className={styles.dividerLine} />
                       <span className={styles.badgeTrendPositive}>▲ +2.4%</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Stacked Progress Bar */}
+                {/* Stacked Progress Bar (Dynamic Widths) */}
                 <div style={{ width: '100%' }}>
                   <div className={styles.barLegendRow}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span className={styles.legendSquareMint} />
-                      <span>Repeat Purchasing (42.1%)</span>
+                      <span>Repeat Purchasing ({custAnalysisStats.repeatPct}%)</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span className={styles.legendSquareEmerald} />
-                      <span>One-time Purchasing (34.3%)</span>
+                      <span>One-time Purchasing ({custAnalysisStats.oneTimePct}%)</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span className={styles.legendSquareDarkGreen} />
-                      <span>Non-purchasing (23.6%)</span>
+                      <span>Non-purchasing ({custAnalysisStats.nonPurchasingPct}%)</span>
                     </div>
                   </div>
 
                   <div className={styles.stackedProgressBar}>
-                    <div className={styles.segRepeat} style={{ width: '42.1%' }}>42.1%</div>
-                    <div className={styles.segOneTime} style={{ width: '34.3%' }}>34.3%</div>
-                    <div className={styles.segNonPurchasing} style={{ width: '23.6%' }}>23.6%</div>
+                    <div className={styles.segRepeat} style={{ width: `${custAnalysisStats.repeatPct}%` }}>
+                      {custAnalysisStats.repeatPct}%
+                    </div>
+                    <div className={styles.segOneTime} style={{ width: `${custAnalysisStats.oneTimePct}%` }}>
+                      {custAnalysisStats.oneTimePct}%
+                    </div>
+                    <div className={styles.segNonPurchasing} style={{ width: `${custAnalysisStats.nonPurchasingPct}%` }}>
+                      {custAnalysisStats.nonPurchasingPct}%
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Row 4: Purchasing Customers & Product Preferences */}
+          {/* Row 4: Purchasing Customers Stacked Bar Chart & Product Preferences Top Ranking */}
           <div className={styles.row4Grid}>
-            {/* Purchasing Customer Top Ranking */}
+            {/* Purchasing Customers Stacked Bar Chart */}
             <div className={styles.cardBox}>
-              <h2 className={styles.cardTitle}>Purchasing Customers Top Ranking</h2>
-              <div className={styles.productPrefGrid}>
-                {productsCol1.map((p) => (
-                  <div key={p.rank} className={styles.prefItem}>
-                    <div className={styles.prefLeft}>
-                      <span className={styles.prefRank}>{p.rank}</span>
-                      <span className={styles.prefAvatar}>🏢</span>
-                      <span>{p.name}</span>
-                    </div>
-                    <span className={styles.prefQty}>{p.qty.toLocaleString()}</span>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Purchasing customers</h2>
+                <div className={styles.legendGroup} style={{ gap: '14px' }}>
+                  <div className={styles.legendItem}>
+                    <span style={{ width: '10px', height: '10px', backgroundColor: '#a7f3d0', borderRadius: '2px', display: 'inline-block' }} />
+                    <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>Total number of customers</span>
                   </div>
-                ))}
+                  <div className={styles.legendItem}>
+                    <span style={{ width: '10px', height: '10px', backgroundColor: '#10b981', borderRadius: '2px', display: 'inline-block' }} />
+                    <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>Monthly number of purchasing customers</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.comboChartContainer} style={{ marginTop: '12px' }}>
+                <div className={styles.yAxis} style={{ gap: '22px', fontSize: '11px', color: '#94a3b8' }}>
+                  <span>1100</span>
+                  <span>800</span>
+                  <span>500</span>
+                  <span>200</span>
+                </div>
+
+                <div className={styles.chartBody}>
+                  <svg className={styles.svgCombo} viewBox="0 0 500 160" preserveAspectRatio="none">
+                    {/* Horizontal Baseline Lines */}
+                    <line x1="0" y1="0" x2="500" y2="0" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="0" y1="43" x2="500" y2="43" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="0" y1="86" x2="500" y2="86" stroke="#f1f5f9" strokeWidth="1" />
+                    <line x1="0" y1="129" x2="500" y2="129" stroke="#e2e8f0" strokeWidth="1" />
+
+                    {/* Stacked Bars per Month */}
+                    {purchasingCustData.map((d, i) => {
+                      const barWidth = 18;
+                      const xPos = 12 + i * 41;
+                      const totalHeight = (d.total / 1100) * 160;
+                      const purchasingHeight = (d.purchasing / 1100) * 160;
+                      const yTotal = 160 - totalHeight;
+                      const yPurchasing = 160 - purchasingHeight;
+
+                      return (
+                        <g key={i}>
+                          {/* Total Customers Bar (Light Mint) */}
+                          <rect
+                            x={xPos}
+                            y={yTotal}
+                            width={barWidth}
+                            height={totalHeight}
+                            fill="#a7f3d0"
+                            rx="4"
+                            ry="4"
+                          />
+                          {/* Monthly Purchasing Customers Bar (Dark Emerald) */}
+                          <rect
+                            x={xPos}
+                            y={yPurchasing}
+                            width={barWidth}
+                            height={purchasingHeight}
+                            fill="#10b981"
+                            rx="4"
+                            ry="4"
+                          />
+                        </g>
+                      );
+                    })}
+                  </svg>
+
+                  <div className={styles.xAxis} style={{ fontSize: '11px', color: '#64748b' }}>
+                    {months.map((m) => (
+                      <span key={m}>{m}</span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -683,7 +825,7 @@ export default function ReportsPage() {
             <div className={styles.cardBox}>
               <h2 className={styles.cardTitle}>Product Preferences Top Ranking</h2>
               <div className={styles.productPrefGrid}>
-                {productsCol2.map((p) => (
+                {productsCol2.slice(0, 5).map((p) => (
                   <div key={p.rank} className={styles.prefItem}>
                     <div className={styles.prefLeft}>
                       <span className={styles.prefRank}>{p.rank}</span>
