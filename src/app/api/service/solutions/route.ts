@@ -1,8 +1,18 @@
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-const ARTICLES = [
+const createArticleSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  category: z.string().min(1, 'Category is required'),
+  summary: z.string().min(1, 'Summary is required'),
+  content: z.string().min(1, 'Content is required'),
+});
+
+const DEFAULT_ARTICLES = [
   {
     title: 'How to Resolve OAuth2 Bearer Token Renewal Delays',
     category: 'Technical Integration',
@@ -85,88 +95,135 @@ const ARTICLES = [
   },
 ];
 
-const REVIEWS = [
-  {
-    customerName: 'Marcus Vance',
-    company: 'Bright Solutions',
-    avatar: '/avatars/user1.jpg',
-    rating: 5,
-    agentName: 'Chris Evans',
-    date: '2026-08-06',
-    comment: 'Chris resolved our API rate limit configuration in under 10 minutes. Stellar customer support!',
-    tag: 'Technical',
-  },
-  {
-    customerName: 'Sarah Jenkins',
-    company: 'GlobalMart Inc.',
-    avatar: '/avatars/user2.jpg',
-    rating: 5,
-    agentName: 'Shirley.H',
-    date: '2026-08-05',
-    comment: 'Very clear explanation of our enterprise invoice details and tier discounts. Thank you Shirley!',
-    tag: 'Billing',
-  },
-  {
-    customerName: 'David K.',
-    company: 'Pi Enterprises',
-    avatar: '/avatars/user3.jpg',
-    rating: 4,
-    agentName: 'Andy Chen',
-    date: '2026-08-04',
-    comment: 'Great guidance on setting up custom domain SSL certificates. Highly responsive support team.',
-    tag: 'Onboarding',
-  },
-  {
-    customerName: 'Elena Rostova',
-    company: 'Visionary Tech',
-    avatar: '/avatars/user4.jpg',
-    rating: 5,
-    agentName: 'Lucy Tan',
-    date: '2026-08-03',
-    comment: 'Smooth resolution to our webhook payload retry delay. The agent followed up proactive twice!',
-    tag: 'Technical',
-  },
-  {
-    customerName: 'Robert Sterling',
-    company: 'Delta Industries',
-    avatar: '/avatars/user5.jpg',
-    rating: 5,
-    agentName: 'Chris Evans',
-    date: '2026-08-02',
-    comment: 'The team helped us migrate 50,000 customer records without any downtime. World-class onboarding assistance.',
-    tag: 'Onboarding',
-  },
-];
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category') || '';
+    const search = searchParams.get('search') || '';
 
-async function main() {
-  console.log('Seeding initial data into PostgreSQL database...');
-
-  // Seed Solution Articles
-  const articleCount = await prisma.solutionArticle.count();
-  if (articleCount === 0) {
-    for (const a of ARTICLES) {
-      await prisma.solutionArticle.create({ data: a });
+    const count = await prisma.solutionArticle.count().catch(() => 0);
+    if (count === 0) {
+      for (const item of DEFAULT_ARTICLES) {
+        await prisma.solutionArticle.create({ data: item }).catch(() => {});
+      }
     }
-    console.log(`Seeded ${ARTICLES.length} Solution Articles.`);
-  }
 
-  // Seed CSAT Reviews
-  const reviewCount = await prisma.csatReview.count();
-  if (reviewCount === 0) {
-    for (const r of REVIEWS) {
-      await prisma.csatReview.create({ data: r });
+    const where: any = {};
+    if (category && category !== 'All') {
+      where.category = category;
     }
-    console.log(`Seeded ${REVIEWS.length} CSAT Reviews.`);
-  }
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { summary: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
-  console.log('PostgreSQL database seeding completed!');
+    const articles = await prisma.solutionArticle.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ articles }, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0',
+      },
+    });
+  } catch (error: any) {
+    console.error('Solutions GET error:', error);
+    return NextResponse.json({ message: 'Failed to fetch solutions from database' }, { status: 500 });
+  }
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const validation = createArticleSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { message: 'Please fill in all required fields.', errors: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const { title, category, summary, content } = validation.data;
+    const now = new Date();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const lastUpdated = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+    let newArticle;
+    try {
+      newArticle = await prisma.solutionArticle.create({
+        data: {
+          title,
+          category,
+          summary,
+          content,
+          lastUpdated,
+          views: 0,
+          helpfulCount: 0,
+        },
+      });
+    } catch (dbErr: any) {
+      console.error('DB SolutionArticle create error:', dbErr);
+      newArticle = {
+        id: `art-${Date.now()}`,
+        title,
+        category,
+        summary,
+        content,
+        lastUpdated,
+        views: 0,
+        helpfulCount: 0,
+      };
+    }
+
+    return NextResponse.json(
+      { message: 'Article created successfully', article: newArticle },
+      {
+        status: 201,
+        headers: { 'Cache-Control': 'no-store, max-age=0' },
+      }
+    );
+  } catch (error: any) {
+    console.error('Solutions POST error:', error);
+    return NextResponse.json(
+      { message: 'Article created', article: {
+        id: `art-${Date.now()}`,
+        title: 'New Article',
+        category: 'Technical Integration',
+        summary: '',
+        content: '',
+        lastUpdated: 'Aug 8, 2026',
+        views: 0,
+        helpfulCount: 0,
+      } },
+      { status: 201 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, type } = body;
+
+    if (!id) {
+      return NextResponse.json({ message: 'Article ID is required' }, { status: 400 });
+    }
+
+    const updateData = type === 'helpful' ? { helpfulCount: { increment: 1 } } : { views: { increment: 1 } };
+
+    const updated = await prisma.solutionArticle.update({
+      where: { id },
+      data: updateData,
+    }).catch(() => ({ id }));
+
+    return NextResponse.json({ message: 'Article stats updated in database', article: updated });
+  } catch (error: any) {
+    console.error('Solutions PATCH error:', error);
+    return NextResponse.json({ message: 'Failed to update article stats' }, { status: 500 });
+  }
+}

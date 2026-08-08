@@ -122,3 +122,65 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Ticket {
+  id           String   @id @default(uuid())
+  ticketNo     String   @unique
+  customerName String
+  avatar       String?
+  subject      String
+  category     String
+  priority     String   // Urgent, High, Medium, Low
+  status       String   // Open, Pending, Resolved
+  agentName    String
+  createdDate  String
+  issueId      String?  @unique
+  issue        Issue?   @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+
+model Issue {
+  id               String   @id @default(uuid())
+  issueKey         String   @unique
+  title            String
+  affectedCustomer String
+  status           String   // Open, In Progress, Escalated, Resolved
+  assignedAgent    String
+  avatar           String?
+  slaRemaining     String
+  severity         String   // Critical, Major, Minor
+  ticket           Ticket?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model SolutionArticle {
+  id           String   @id @default(uuid())
+  title        String
+  category     String
+  views        Int      @default(0)
+  helpfulCount Int      @default(0)
+  lastUpdated  String
+  summary      String
+  content      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model CsatReview {
+  id           String   @id @default(uuid())
+  customerName String
+  company      String
+  avatar       String?
+  rating       Int      @default(5)
+  agentName    String
+  date         String
+  comment      String
+  tag          String   // Technical, Billing, Onboarding
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+

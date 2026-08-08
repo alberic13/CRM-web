@@ -25,72 +25,13 @@ const CATEGORIES: ArticleCategory[] = [
   'API Reference',
 ];
 
-const defaultArticles: SolutionArticle[] = [
-  {
-    id: '1',
-    title: 'How to Resolve OAuth2 Bearer Token Renewal Delays',
-    category: 'Technical Integration',
-    views: 1420,
-    helpfulCount: 388,
-    lastUpdated: 'Aug 4, 2026',
-    summary: 'Step-by-step troubleshooting guide for configuring refresh token rotation policies in mobile and web SDKs.',
-    content:
-      '## Overview\nOAuth2 Bearer Token Renewal Delays can disrupt your application. This guide walks you through identifying and resolving common causes.\n\n## Steps\n1. Check your token expiry time in the authorization server settings.\n2. Implement refresh token rotation to keep sessions alive.\n3. Add retry logic with exponential backoff when the server returns 401.\n4. Log token refresh events to monitor renewal patterns.\n\n## Common Causes\n- Misconfigured token TTL\n- Missing refresh token scope\n- Clock skew between client and server\n\n## Additional Resources\nSee our [API Reference](#) for full token configuration options.',
-  },
-  {
-    id: '2',
-    title: 'Updating Billing Payment Methods & Tax Invoices',
-    category: 'Billing & Subscription',
-    views: 2190,
-    helpfulCount: 612,
-    lastUpdated: 'Jul 28, 2026',
-    summary: 'Instructions on adding international credit cards, updating company VAT numbers, and downloading automated monthly PDFs.',
-    content:
-      '## Overview\nManaging billing payment methods and tax invoices is straightforward in the admin portal.\n\n## Adding a Payment Method\n1. Navigate to **Settings > Billing**.\n2. Click **Add Payment Method**.\n3. Enter your card details and save.\n\n## Updating VAT Number\n1. Go to **Settings > Company Info**.\n2. Enter your VAT/Tax ID in the designated field.\n3. Your next invoice will reflect this change.\n\n## Downloading Invoices\nAll invoices are available under **Billing > Invoice History** in PDF format.',
-  },
-  {
-    id: '3',
-    title: 'Setting Up Multi-Factor Authentication (MFA) & IP Whitelisting',
-    category: 'Account Security',
-    views: 980,
-    helpfulCount: 245,
-    lastUpdated: 'Aug 1, 2026',
-    summary: 'Enforce TOTP authenticator apps for team workspace members and configure CIDR IP range boundaries.',
-    content:
-      '## Overview\nStrengthening account security with MFA and IP whitelisting protects your workspace from unauthorized access.\n\n## Enabling MFA\n1. Go to **Settings > Security**.\n2. Enable MFA and choose **Authenticator App (TOTP)**.\n3. Scan the QR code with your authenticator app.\n4. Enter the 6-digit code to confirm.\n\n## IP Whitelisting\n1. Under **Settings > Security > IP Allowlist**, click **Add Range**.\n2. Enter your CIDR range (e.g. 192.168.1.0/24).\n3. Save — all other IPs will be blocked from login.',
-  },
-  {
-    id: '4',
-    title: 'Webhooks Rate Limits & Retry Backoff Exponential Standards',
-    category: 'API Reference',
-    views: 1750,
-    helpfulCount: 490,
-    lastUpdated: 'Jul 15, 2026',
-    summary: 'Complete technical reference detailing HTTP 429 response headers and recommended exponential backoff retry algorithms.',
-    content:
-      '## Overview\nOur webhook system enforces rate limits to ensure platform stability.\n\n## Rate Limit Headers\n- `X-RateLimit-Limit`: Max requests per window\n- `X-RateLimit-Remaining`: Requests left in current window\n- `Retry-After`: Seconds until limit resets\n\n## Exponential Backoff Formula\n```\ndelay = min(cap, base * 2^attempt) + jitter\n```\n\n## Best Practices\n- Always inspect `Retry-After` before retrying.\n- Add random jitter to prevent thundering herd.\n- Log all 429 responses for monitoring.',
-  },
-  {
-    id: '5',
-    title: 'Customizing Role Permissions for Manager & Agent Tiers',
-    category: 'Account Security',
-    views: 870,
-    helpfulCount: 210,
-    lastUpdated: 'Jun 30, 2026',
-    summary: 'How workspace Admins can assign fine-grained read/write privileges to sales representatives and marketing operators.',
-    content:
-      '## Overview\nRole-based access control (RBAC) gives you fine-grained control over what each team member can do.\n\n## Default Roles\n- **Admin**: Full access\n- **Manager**: Read + write for their team\n- **Agent**: Read-only for most resources\n\n## Customizing Permissions\n1. Go to **Settings > Roles & Permissions**.\n2. Select a role or create a new one.\n3. Toggle individual permissions on or off.\n4. Click **Save Changes**.\n\n## Tips\n- Use custom roles to match your org structure.\n- Audit permissions quarterly.',
-  },
-];
-
 export default function SolutionsLibraryPage() {
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Articles state (starts with defaults, new ones get appended)
-  const [articles, setArticles] = useState<SolutionArticle[]>(defaultArticles);
+  const [articles, setArticles] = useState<SolutionArticle[]>([]);
 
   // Create Article modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -108,8 +49,25 @@ export default function SolutionsLibraryPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.user) setUser(data.user);
-      });
+      })
+      .catch((err) => console.log('Auth check error:', err));
+
+    fetchArticles();
   }, []);
+
+  const fetchArticles = async () => {
+    try {
+      const res = await fetch('/api/service/solutions', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.articles) {
+          setArticles(data.articles);
+        }
+      }
+    } catch (err) {
+      console.warn('Fetch articles error:', err);
+    }
+  };
 
   const filteredArticles = articles.filter((art) => {
     const matchCategory = selectedCategory === 'All' || art.category === selectedCategory;
@@ -128,7 +86,7 @@ export default function SolutionsLibraryPage() {
     setShowCreateModal(true);
   }
 
-  function handleCreateArticle() {
+  async function handleCreateArticle() {
     if (!formTitle.trim()) { setFormError('Title is required.'); return; }
     if (!formSummary.trim()) { setFormError('Summary is required.'); return; }
     if (!formContent.trim()) { setFormError('Content is required.'); return; }
@@ -137,29 +95,94 @@ export default function SolutionsLibraryPage() {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const dateStr = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 
-    const newArticle: SolutionArticle = {
-      id: `custom-${Date.now()}`,
-      title: formTitle.trim(),
-      category: formCategory,
-      views: 0,
-      helpfulCount: 0,
-      lastUpdated: dateStr,
-      summary: formSummary.trim(),
-      content: formContent.trim(),
-    };
+    try {
+      const res = await fetch('/api/service/solutions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formTitle.trim(),
+          category: formCategory,
+          summary: formSummary.trim(),
+          content: formContent.trim(),
+        }),
+      });
 
-    setArticles((prev) => [newArticle, ...prev]);
-    setShowCreateModal(false);
+      const data = await res.json().catch(() => ({}));
+
+      const publishedArticle: SolutionArticle = data.article || {
+        id: `art-${Date.now()}`,
+        title: formTitle.trim(),
+        category: formCategory,
+        views: 0,
+        helpfulCount: 0,
+        lastUpdated: dateStr,
+        summary: formSummary.trim(),
+        content: formContent.trim(),
+      };
+
+      // Set category filter to 'All' and reset search query so new article is always visible
+      setSelectedCategory('All');
+      setSearchQuery('');
+      setArticles((prev) => [publishedArticle, ...prev.filter((a) => a.id !== publishedArticle.id)]);
+      setFormTitle('');
+      setFormSummary('');
+      setFormContent('');
+      setFormError('');
+      setShowCreateModal(false);
+    } catch (err: any) {
+      console.error('Create article error:', err);
+      const fallbackArticle: SolutionArticle = {
+        id: `art-${Date.now()}`,
+        title: formTitle.trim(),
+        category: formCategory,
+        views: 0,
+        helpfulCount: 0,
+        lastUpdated: dateStr,
+        summary: formSummary.trim(),
+        content: formContent.trim(),
+      };
+      setSelectedCategory('All');
+      setSearchQuery('');
+      setArticles((prev) => [fallbackArticle, ...prev.filter((a) => a.id !== fallbackArticle.id)]);
+      setShowCreateModal(false);
+    }
   }
 
-  function openPreview(art: SolutionArticle) {
-    setArticles((prev) =>
-      prev.map((a) => (a.id === art.id ? { ...a, views: a.views + 1 } : a))
-    );
-    setPreviewArticle({ ...art, views: art.views + 1 });
+  async function openPreview(art: SolutionArticle) {
+    setPreviewArticle(art);
+
+    try {
+      fetch('/api/service/solutions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: art.id, type: 'view' }),
+      });
+      setArticles((prev) =>
+        prev.map((a) => (a.id === art.id ? { ...a, views: a.views + 1 } : a))
+      );
+    } catch (err) {
+      console.error('Track view error:', err);
+    }
   }
 
-  // Render markdown-lite: convert ## headings, ``` code blocks, ** bold
+  async function handleHelpfulClick(artId: string) {
+    try {
+      fetch('/api/service/solutions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: artId, type: 'helpful' }),
+      });
+      setArticles((prev) =>
+        prev.map((a) => (a.id === artId ? { ...a, helpfulCount: a.helpfulCount + 1 } : a))
+      );
+      setPreviewArticle((prev) =>
+        prev ? { ...prev, helpfulCount: prev.helpfulCount + 1 } : prev
+      );
+    } catch (err) {
+      console.error('Track helpful error:', err);
+    }
+  }
+
   function renderContent(text: string) {
     const lines = text.split('\n');
     const elements: React.ReactNode[] = [];
@@ -412,16 +435,7 @@ export default function SolutionsLibraryPage() {
             <div className={styles.modalFooter}>
               <button
                 className={styles.helpfulBtn}
-                onClick={() => {
-                  setArticles((prev) =>
-                    prev.map((a) =>
-                      a.id === previewArticle.id ? { ...a, helpfulCount: a.helpfulCount + 1 } : a
-                    )
-                  );
-                  setPreviewArticle((prev) =>
-                    prev ? { ...prev, helpfulCount: prev.helpfulCount + 1 } : prev
-                  );
-                }}
+                onClick={() => handleHelpfulClick(previewArticle.id)}
               >
                 👍 This was helpful
               </button>

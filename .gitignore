@@ -40,10 +40,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# AI / Agent files
+# AI / Agent / Temporary scratch files
 AGENTS.md
 CLAUDE.md
 .mcp.json
 figma-mcp/
+scratch/
 
 /src/generated/prisma
+

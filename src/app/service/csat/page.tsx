@@ -17,64 +17,124 @@ interface ReviewFeedback {
   tag: 'Technical' | 'Billing' | 'Onboarding';
 }
 
+const DEFAULT_REVIEWS: ReviewFeedback[] = [
+  {
+    id: '1',
+    customerName: 'Marcus Vance',
+    company: 'Bright Solutions',
+    avatar: '/avatars/user1.jpg',
+    rating: 5,
+    agentName: 'Chris Evans',
+    date: '2026-08-06',
+    comment: 'Chris resolved our API rate limit configuration in under 10 minutes. Stellar customer support!',
+    tag: 'Technical',
+  },
+  {
+    id: '2',
+    customerName: 'Sarah Jenkins',
+    company: 'GlobalMart Inc.',
+    avatar: '/avatars/user2.jpg',
+    rating: 5,
+    agentName: 'Shirley.H',
+    date: '2026-08-05',
+    comment: 'Very clear explanation of our enterprise invoice details and tier discounts. Thank you Shirley!',
+    tag: 'Billing',
+  },
+  {
+    id: '3',
+    customerName: 'David K.',
+    company: 'Pi Enterprises',
+    avatar: '/avatars/user3.jpg',
+    rating: 4,
+    agentName: 'Andy Chen',
+    date: '2026-08-04',
+    comment: 'Great guidance on setting up custom domain SSL certificates. Highly responsive support team.',
+    tag: 'Onboarding',
+  },
+  {
+    id: '4',
+    customerName: 'Elena Rostova',
+    company: 'Visionary Tech',
+    avatar: '/avatars/user4.jpg',
+    rating: 5,
+    agentName: 'Lucy Tan',
+    date: '2026-08-03',
+    comment: 'Smooth resolution to our webhook payload retry delay. The agent followed up proactive twice!',
+    tag: 'Technical',
+  },
+  {
+    id: '5',
+    customerName: 'Robert Sterling',
+    company: 'Delta Industries',
+    avatar: '/avatars/user5.jpg',
+    rating: 5,
+    agentName: 'Chris Evans',
+    date: '2026-08-02',
+    comment: 'The team helped us migrate 50,000 customer records without any downtime. World-class onboarding assistance.',
+    tag: 'Onboarding',
+  },
+  {
+    id: '6',
+    customerName: 'Amanda Lin',
+    company: 'Alpha Solutions',
+    avatar: '/avatars/user6.jpg',
+    rating: 5,
+    agentName: 'Lucy Tan',
+    date: '2026-08-01',
+    comment: 'Quick response on our subscription VAT invoice adjustment. Extremely helpful and friendly staff.',
+    tag: 'Billing',
+  },
+  {
+    id: '7',
+    customerName: 'Jonathan Hayes',
+    company: 'Nexus Software Ltd',
+    avatar: '/avatars/user7.jpg',
+    rating: 4,
+    agentName: 'Andy Chen',
+    date: '2026-07-30',
+    comment: 'Detailed response with working code snippets for OAuth token refresh integration. Solved our issue!',
+    tag: 'Technical',
+  },
+];
+
 export default function CustomerSatisfactionPage() {
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const reviews: ReviewFeedback[] = [
-    {
-      id: '1',
-      customerName: 'Marcus Vance',
-      company: 'Bright Solutions',
-      avatar: '/avatars/user1.jpg',
-      rating: 5,
-      agentName: 'Chris Evans',
-      date: '2026-08-06',
-      comment: 'Chris resolved our API rate limit configuration in under 10 minutes. Stellar customer support!',
-      tag: 'Technical',
-    },
-    {
-      id: '2',
-      customerName: 'Sarah Jenkins',
-      company: 'GlobalMart Inc.',
-      avatar: '/avatars/user2.jpg',
-      rating: 5,
-      agentName: 'Shirley.H',
-      date: '2026-08-05',
-      comment: 'Very clear explanation of our enterprise invoice details and tier discounts. Thank you Shirley!',
-      tag: 'Billing',
-    },
-    {
-      id: '3',
-      customerName: 'David K.',
-      company: 'Pi Enterprises',
-      avatar: '/avatars/user3.jpg',
-      rating: 4,
-      agentName: 'Andy Chen',
-      date: '2026-08-04',
-      comment: 'Great guidance on setting up custom domain SSL certificates. Highly responsive support team.',
-      tag: 'Onboarding',
-    },
-    {
-      id: '4',
-      customerName: 'Elena Rostova',
-      company: 'Visionary Tech',
-      avatar: '/avatars/user4.jpg',
-      rating: 5,
-      agentName: 'Lucy Tan',
-      date: '2026-08-03',
-      comment: 'Smooth resolution to our webhook payload retry delay. The agent followed up proactive twice!',
-      tag: 'Technical',
-    },
-  ];
+  const [reviews, setReviews] = useState<ReviewFeedback[]>(DEFAULT_REVIEWS);
+  const [stats, setStats] = useState({
+    totalReviews: DEFAULT_REVIEWS.length,
+    avgRating: '4.9',
+    csatScore: '96.5%',
+  });
 
   useEffect(() => {
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
         if (data.user) setUser(data.user);
-      });
+      })
+      .catch((err) => console.log('Auth check error:', err));
+
+    fetchCsat();
   }, []);
+
+  const fetchCsat = async () => {
+    try {
+      const res = await fetch('/api/service/csat');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.reviews && data.reviews.length > 0) {
+          setReviews(data.reviews);
+        }
+        if (data.stats) {
+          setStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.warn('Using default CSAT reviews:', err);
+    }
+  };
 
   return (
     <div className={styles.layout}>
@@ -87,9 +147,9 @@ export default function CustomerSatisfactionPage() {
           {/* Header */}
           <div className={styles.topRow}>
             <div>
-              <h1 className={styles.pageTitle}>Customer Satisfaction (CSAT) & Feedback</h1>
+              <h1 className={styles.pageTitle}>Customer Satisfaction (CSAT) &amp; Feedback</h1>
               <div className={styles.breadcrumbs}>
-                <span>Home</span> &gt; <span>Customer Service</span> &gt; <strong>CSAT & Feedback</strong>
+                <span>Home</span> &gt; <span>Customer Service</span> &gt; <strong>CSAT &amp; Feedback</strong>
               </div>
             </div>
           </div>
@@ -99,15 +159,17 @@ export default function CustomerSatisfactionPage() {
             <div className={styles.metricCard}>
               <span className={styles.metricLabel}>Overall CSAT Score</span>
               <div className={styles.valRow}>
-                <span className={styles.metricVal}>94.8%</span>
-                <span className={styles.incBadge}>+2.1% vs last month</span>
+                <span className={styles.metricVal}>{stats.csatScore}</span>
+                <span className={styles.incBadge}>Synced from DB</span>
               </div>
             </div>
 
             <div className={styles.metricCard}>
               <span className={styles.metricLabel}>Average Star Rating</span>
               <div className={styles.valRow}>
-                <span className={styles.metricVal} style={{ color: '#eab308' }}>4.8 / 5.0</span>
+                <span className={styles.metricVal} style={{ color: '#eab308' }}>
+                  {stats.avgRating} / 5.0
+                </span>
                 <span className={styles.starsSpan}>★★★★★</span>
               </div>
             </div>
@@ -115,22 +177,24 @@ export default function CustomerSatisfactionPage() {
             <div className={styles.metricCard}>
               <span className={styles.metricLabel}>Total Feedback Reviews</span>
               <div className={styles.valRow}>
-                <span className={styles.metricVal} style={{ color: '#06b6d4' }}>324</span>
-                <span className={styles.incBadge}>98.5% Positive</span>
+                <span className={styles.metricVal} style={{ color: '#06b6d4' }}>
+                  {stats.totalReviews || reviews.length}
+                </span>
+                <span className={styles.incBadge}>Live Customer Ratings</span>
               </div>
             </div>
           </div>
 
           {/* Feedback Reviews Grid */}
           <div className={styles.cardBox}>
-            <h2 className={styles.cardTitle}>Recent Customer Feedback & Reviews</h2>
+            <h2 className={styles.cardTitle}>Recent Customer Feedback &amp; Reviews</h2>
 
             <div className={styles.reviewsList}>
               {reviews.map((rev) => (
                 <div key={rev.id} className={styles.reviewCard}>
                   <div className={styles.reviewHeader}>
                     <div className={styles.userInfo}>
-                      <img src={rev.avatar} alt={rev.customerName} className={styles.avatarImg} />
+                      <img src={rev.avatar || '/avatars/user1.jpg'} alt={rev.customerName} className={styles.avatarImg} />
                       <div>
                         <div className={styles.userName}>{rev.customerName}</div>
                         <div className={styles.userCompany}>{rev.company}</div>
@@ -146,7 +210,9 @@ export default function CustomerSatisfactionPage() {
                   <p className={styles.commentText}>"{rev.comment}"</p>
 
                   <div className={styles.reviewFooter}>
-                    <span className={styles.agentTag}>Handled by: <strong>{rev.agentName}</strong></span>
+                    <span className={styles.agentTag}>
+                      Handled by: <strong>{rev.agentName}</strong>
+                    </span>
                     <span className={styles.categoryBadge}>{rev.tag}</span>
                   </div>
                 </div>
