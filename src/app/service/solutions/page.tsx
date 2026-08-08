@@ -44,17 +44,6 @@ export default function SolutionsLibraryPage() {
   // Preview modal state
   const [previewArticle, setPreviewArticle] = useState<SolutionArticle | null>(null);
 
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) setUser(data.user);
-      })
-      .catch((err) => console.log('Auth check error:', err));
-
-    fetchArticles();
-  }, []);
-
   const fetchArticles = async () => {
     try {
       const res = await fetch('/api/service/solutions', { cache: 'no-store' });
@@ -68,6 +57,18 @@ export default function SolutionsLibraryPage() {
       console.warn('Fetch articles error:', err);
     }
   };
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) setUser(data.user);
+      })
+      .catch((err) => console.log('Auth check error:', err));
+
+    fetchArticles();
+  }, []);
+
 
   const filteredArticles = articles.filter((art) => {
     const matchCategory = selectedCategory === 'All' || art.category === selectedCategory;
