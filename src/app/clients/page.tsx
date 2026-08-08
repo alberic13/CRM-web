@@ -22,6 +22,7 @@ interface SalesCustomer {
 
 export default function ClientsPage() {
   const [user, setUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [salesCustomers, setSalesCustomers] = useState<SalesCustomer[]>([]);
 
   // Filter States
@@ -30,12 +31,8 @@ export default function ClientsPage() {
   const [regionFilter, setRegionFilter] = useState('All');
 
   // Client List State
-  const [clients, setClients] = useState<ClientItem[]>([
-    { id: '1', name: 'Tau Corporation', industry: 'Technology', region: 'North America', tier: 'Enterprise Tier 1' },
-    { id: '2', name: 'Pi Enterprises', industry: 'Manufacturing', region: 'Europe', tier: 'Mid-Market' },
-    { id: '3', name: 'GlobalMart Inc.', industry: 'Retail & E-commerce', region: 'Europe', tier: 'Enterprise Tier 1' },
-    { id: '4', name: 'Delta Industries', industry: 'Logistics & Supply', region: 'Asia Pacific', tier: 'Mid-Market' },
-  ]);
+  const [clients, setClients] = useState<ClientItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Add Client Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -44,19 +41,34 @@ export default function ClientsPage() {
   const [industry, setIndustry] = useState('Technology');
   const [region, setRegion] = useState('North America');
   const [tier, setTier] = useState('Enterprise Tier 1');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientItem | null>(null);
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+
+  // ── Fetch clients from DB ──────────────────────────────────
+  const fetchClients = async () => {
+    try {
+      const res = await fetch('/api/clients');
+      const data = await res.json();
+      if (data.clients) setClients(data.clients);
+    } catch (err) {
+      console.error('Failed to load clients:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/auth/me')
       .then((res) => res.json())
-      .then((data) => {
-        if (data.user) setUser(data.user);
-      });
+      .then((data) => { if (data.user) setUser(data.user); });
 
-    // Fetch Sales Customers to populate dropdown
+    fetchClients();
+
+    // Fetch Sales Customers for the dropdown
     fetch('/api/customers')
       .then((res) => res.json())
       .then((data) => {
@@ -79,19 +91,14 @@ export default function ClientsPage() {
           { id: 'c2', name: 'Pi Enterprises', region: 'Europe' },
           { id: 'c3', name: 'GlobalMart Inc.', region: 'Europe' },
           { id: 'c4', name: 'Delta Industries', region: 'Asia Pacific' },
-          { id: 'c5', name: 'Xi Group', region: 'Asia Pacific' },
-          { id: 'c6', name: 'Lambda Ltd', region: 'North America' },
         ]);
       });
   }, []);
 
-  // Handle Sales Customer Selection
+  // ── Sales Customer Selection ──────────────────────────────
   const handleSelectSalesCustomer = (customerId: string) => {
     setSelectedSalesCustomerId(customerId);
-    if (customerId === 'CUSTOM') {
-      setClientName('');
-      return;
-    }
+    if (customerId === 'CUSTOM') { setClientName(''); return; }
     const found = salesCustomers.find((c) => c.id === customerId);
     if (found) {
       setClientName(found.name);
@@ -99,51 +106,89 @@ export default function ClientsPage() {
     }
   };
 
-  // Add Client Submit
-  const handleAddClientSubmit = (e: React.FormEvent) => {
+  // ── Add Client → POST to API ──────────────────────────────
+  const handleAddClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientName.trim()) {
-      alert('Please enter or select a client name.');
-      return;
+    if (!clientName.trim()) { alert('Please enter or select a client name.'); return; }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: clientName.trim(), industry, region, tier }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.message || 'Failed to save client.');
+        return;
+      }
+
+      // Refresh list from DB
+      await fetchClients();
+      setIsAddModalOpen(false);
+      setSelectedSalesCustomerId('');
+      setClientName('');
+      setIndustry('Technology');
+      setRegion('North America');
+      setTier('Enterprise Tier 1');
+    } catch (err) {
+      alert('An error occurred while saving the client.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const newClient: ClientItem = {
-      id: Date.now().toString(),
-      name: clientName,
-      industry,
-      region,
-      tier,
-    };
-
-    setClients([newClient, ...clients]);
-    setIsAddModalOpen(false);
-    setSelectedSalesCustomerId('');
-    setClientName('');
   };
 
-  // Edit Client Submit
-  const handleEditClientSubmit = (e: React.FormEvent) => {
+  // ── Edit Client → PUT to API ──────────────────────────────
+  const handleEditClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingClient) return;
 
-    setClients(clients.map((c) => (c.id === editingClient.id ? editingClient : c)));
-    setIsEditModalOpen(false);
-    setEditingClient(null);
-  };
+    setIsEditSubmitting(true);
+    try {
+      const res = await fetch(`/api/clients/${editingClient.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editingClient.name,
+          industry: editingClient.industry,
+          region: editingClient.region,
+          tier: editingClient.tier,
+        }),
+      });
 
-  // Delete Client
-  const handleDeleteClient = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete client "${name}"?`)) {
-      setClients(clients.filter((c) => c.id !== id));
+      if (!res.ok) {
+        alert('Failed to update client.');
+        return;
+      }
+
+      await fetchClients();
+      setIsEditModalOpen(false);
+      setEditingClient(null);
+    } catch (err) {
+      alert('An error occurred while updating the client.');
+    } finally {
+      setIsEditSubmitting(false);
     }
   };
 
-  // Export to CSV
+  // ── Delete Client → DELETE to API ────────────────────────
+  const handleDeleteClient = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete client "${name}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+      if (!res.ok) { alert('Failed to delete client.'); return; }
+      await fetchClients();
+    } catch (err) {
+      alert('An error occurred while deleting the client.');
+    }
+  };
+
+  // ── Export to CSV ─────────────────────────────────────────
   const handleExportCsv = () => {
-    if (filteredClients.length === 0) {
-      alert('No client data available to export.');
-      return;
-    }
+    if (filteredClients.length === 0) { alert('No client data available to export.'); return; }
 
     const headers = ['Client Name', 'Industry', 'Region', 'Tier Category'];
     const rows = filteredClients.map((c) => [
@@ -165,17 +210,18 @@ export default function ClientsPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Filtered Clients Computation
+  // ── Filtered Clients ──────────────────────────────────────
   const filteredClients = useMemo(() => {
     return clients.filter((c) => {
       if (tierFilter !== 'All' && c.tier !== tierFilter) return false;
       if (regionFilter !== 'All' && c.region !== regionFilter) return false;
       if (search.trim() !== '') {
         const q = search.toLowerCase();
-        const matchName = c.name.toLowerCase().includes(q);
-        const matchInd = c.industry.toLowerCase().includes(q);
-        const matchReg = c.region.toLowerCase().includes(q);
-        if (!matchName && !matchInd && !matchReg) return false;
+        if (
+          !c.name.toLowerCase().includes(q) &&
+          !c.industry.toLowerCase().includes(q) &&
+          !c.region.toLowerCase().includes(q)
+        ) return false;
       }
       return true;
     });
@@ -183,10 +229,10 @@ export default function ClientsPage() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar activeMenu="Clients" />
+      <Sidebar activeMenu="Clients" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className={styles.mainContent}>
-        <Header user={user} />
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
         <main className={styles.contentBody}>
           {/* Top Title & Header Buttons */}
@@ -199,10 +245,7 @@ export default function ClientsPage() {
             </div>
 
             <div className={styles.actionButtons}>
-              <button
-                className={styles.primaryBtn}
-                onClick={() => setIsAddModalOpen(true)}
-              >
+              <button className={styles.primaryBtn} onClick={() => setIsAddModalOpen(true)}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
@@ -230,6 +273,7 @@ export default function ClientsPage() {
                   <option value="Enterprise Tier 1">Enterprise Tier 1</option>
                   <option value="Mid-Market">Mid-Market</option>
                   <option value="Small Business (SMB)">Small Business (SMB)</option>
+                  <option value="VIP Partner">VIP Partner</option>
                 </select>
 
                 <select
@@ -241,6 +285,8 @@ export default function ClientsPage() {
                   <option value="North America">North America</option>
                   <option value="Europe">Europe</option>
                   <option value="Asia Pacific">Asia Pacific</option>
+                  <option value="Latin America">Latin America</option>
+                  <option value="Middle East">Middle East</option>
                 </select>
               </div>
 
@@ -265,10 +311,16 @@ export default function ClientsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredClients.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>
+                      Loading clients...
+                    </td>
+                  </tr>
+                ) : filteredClients.length === 0 ? (
                   <tr>
                     <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
-                      No clients found matching your search filters.
+                      No clients found. Click <strong>+ ADD CLIENT</strong> to add one.
                     </td>
                   </tr>
                 ) : (
@@ -284,6 +336,8 @@ export default function ClientsPage() {
                               ? styles.tierEnterprise
                               : client.tier.includes('Mid-Market')
                               ? styles.tierMidMarket
+                              : client.tier.includes('VIP')
+                              ? styles.tierEnterprise
                               : styles.tierSmb
                           }
                         >
@@ -292,14 +346,10 @@ export default function ClientsPage() {
                       </td>
                       <td>
                         <div className={styles.actionGroup}>
-                          {/* Edit Icon Button */}
                           <button
                             className={styles.editBtn}
                             title="Edit Client"
-                            onClick={() => {
-                              setEditingClient({ ...client });
-                              setIsEditModalOpen(true);
-                            }}
+                            onClick={() => { setEditingClient({ ...client }); setIsEditModalOpen(true); }}
                           >
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -307,7 +357,6 @@ export default function ClientsPage() {
                             </svg>
                           </button>
 
-                          {/* Delete Icon Button */}
                           <button
                             className={styles.deleteBtn}
                             title="Delete Client"
@@ -336,14 +385,13 @@ export default function ClientsPage() {
         </main>
       </div>
 
-      {/* Add Client Modal */}
+      {/* ── Add Client Modal ── */}
       {isAddModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <h2 className={styles.modalTitle}>Add New Client</h2>
 
             <form onSubmit={handleAddClientSubmit} className={styles.modalForm}>
-              {/* Select from Sales Customers */}
               <div className={styles.field}>
                 <label className={styles.label}>Select From Sales &gt; Customers</label>
                 <select
@@ -361,7 +409,6 @@ export default function ClientsPage() {
                 </select>
               </div>
 
-              {/* Client Name Input */}
               <div className={styles.field}>
                 <label className={styles.label}>Client / Company Name</label>
                 <input
@@ -374,14 +421,9 @@ export default function ClientsPage() {
                 />
               </div>
 
-              {/* Industry Select */}
               <div className={styles.field}>
                 <label className={styles.label}>Industry</label>
-                <select
-                  className={styles.input}
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                >
+                <select className={styles.input} value={industry} onChange={(e) => setIndustry(e.target.value)}>
                   <option value="Technology">Technology</option>
                   <option value="Manufacturing">Manufacturing</option>
                   <option value="Retail & E-commerce">Retail &amp; E-commerce</option>
@@ -392,14 +434,9 @@ export default function ClientsPage() {
                 </select>
               </div>
 
-              {/* Region Select */}
               <div className={styles.field}>
                 <label className={styles.label}>Region</label>
-                <select
-                  className={styles.input}
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                >
+                <select className={styles.input} value={region} onChange={(e) => setRegion(e.target.value)}>
                   <option value="North America">North America</option>
                   <option value="Europe">Europe</option>
                   <option value="Asia Pacific">Asia Pacific</option>
@@ -408,14 +445,9 @@ export default function ClientsPage() {
                 </select>
               </div>
 
-              {/* Tier Category Select */}
               <div className={styles.field}>
                 <label className={styles.label}>Tier Category</label>
-                <select
-                  className={styles.input}
-                  value={tier}
-                  onChange={(e) => setTier(e.target.value)}
-                >
+                <select className={styles.input} value={tier} onChange={(e) => setTier(e.target.value)}>
                   <option value="Enterprise Tier 1">Enterprise Tier 1</option>
                   <option value="Mid-Market">Mid-Market</option>
                   <option value="Small Business (SMB)">Small Business (SMB)</option>
@@ -428,11 +460,12 @@ export default function ClientsPage() {
                   type="button"
                   className={styles.secondaryBtn}
                   onClick={() => setIsAddModalOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
-                <button type="submit" className={styles.primaryBtn}>
-                  Save Client
+                <button type="submit" className={styles.primaryBtn} disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Client'}
                 </button>
               </div>
             </form>
@@ -440,7 +473,7 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {/* Edit Client Modal */}
+      {/* ── Edit Client Modal ── */}
       {isEditModalOpen && editingClient && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -508,15 +541,13 @@ export default function ClientsPage() {
                 <button
                   type="button"
                   className={styles.secondaryBtn}
-                  onClick={() => {
-                    setIsEditModalOpen(false);
-                    setEditingClient(null);
-                  }}
+                  onClick={() => { setIsEditModalOpen(false); setEditingClient(null); }}
+                  disabled={isEditSubmitting}
                 >
                   Cancel
                 </button>
-                <button type="submit" className={styles.primaryBtn}>
-                  Update Client
+                <button type="submit" className={styles.primaryBtn} disabled={isEditSubmitting}>
+                  {isEditSubmitting ? 'Updating...' : 'Update Client'}
                 </button>
               </div>
             </form>

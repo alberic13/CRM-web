@@ -100,6 +100,18 @@ async function main() {
     ],
   });
 
+  // 7. Initial Clients
+  await prisma.client.deleteMany({});
+  await prisma.client.createMany({
+    data: [
+      { name: 'Tau Corporation', industry: 'Technology', region: 'North America', tier: 'Enterprise Tier 1' },
+      { name: 'Pi Enterprises', industry: 'Manufacturing', region: 'Europe', tier: 'Mid-Market' },
+      { name: 'GlobalMart Inc.', industry: 'Retail & E-commerce', region: 'Europe', tier: 'Enterprise Tier 1' },
+      { name: 'Delta Industries', industry: 'Logistics & Supply', region: 'Asia Pacific', tier: 'Mid-Market' },
+    ],
+  });
+  console.log('Clients seeded.');
+
   console.log('Prototype database seeded with real person avatars successfully!');
 }
 
