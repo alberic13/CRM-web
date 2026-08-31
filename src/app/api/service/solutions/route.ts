@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
       }
     }
 
-    const where: any = {};
+    const where: Prisma.SolutionArticleWhereInput = {};
     if (category && category !== 'All') {
       where.category = category;
     }
@@ -130,7 +131,7 @@ export async function GET(request: Request) {
         'Cache-Control': 'no-store, max-age=0',
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Solutions GET error:', error);
     return NextResponse.json({ message: 'Failed to fetch solutions from database' }, { status: 500 });
   }
@@ -166,7 +167,7 @@ export async function POST(request: Request) {
           helpfulCount: 0,
         },
       });
-    } catch (dbErr: any) {
+    } catch (dbErr) {
       console.error('DB SolutionArticle create error:', dbErr);
       newArticle = {
         id: `art-${Date.now()}`,
@@ -187,7 +188,7 @@ export async function POST(request: Request) {
         headers: { 'Cache-Control': 'no-store, max-age=0' },
       }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Solutions POST error:', error);
     return NextResponse.json(
       { message: 'Article created', article: {
@@ -222,7 +223,7 @@ export async function PATCH(request: Request) {
     }).catch(() => ({ id }));
 
     return NextResponse.json({ message: 'Article stats updated in database', article: updated });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Solutions PATCH error:', error);
     return NextResponse.json({ message: 'Failed to update article stats' }, { status: 500 });
   }

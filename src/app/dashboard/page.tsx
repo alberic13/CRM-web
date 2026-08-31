@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './dashboard.module.css';
 
 interface DashboardData {
@@ -36,7 +37,7 @@ interface DashboardData {
 }
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Interactive Filters State
@@ -45,9 +46,6 @@ export default function DashboardPage() {
   const [salesViewMode, setSalesViewMode] = useState<'Member' | 'Team'>('Member');
   const [sortField, setSortField] = useState<'revenue' | 'orders' | 'conversionRate'>('revenue');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-  // Chart Tooltip State
-  const [chartHover, setChartHover] = useState<{ x: number; y: number; label: string; val: string } | null>(null);
 
   const [data, setData] = useState<DashboardData | null>(null);
 
@@ -281,8 +279,8 @@ export default function DashboardPage() {
   // Sorted Sales Team Leaderboard
   const sortedSalesTeam = useMemo(() => {
     return [...rawSalesTeam].sort((a, b) => {
-      let valA = a[sortField];
-      let valB = b[sortField];
+      const valA = a[sortField];
+      const valB = b[sortField];
       if (sortOrder === 'asc') return valA > valB ? 1 : -1;
       return valA < valB ? 1 : -1;
     });
@@ -334,7 +332,7 @@ export default function DashboardPage() {
                 <select
                   className={styles.dateSelect}
                   value={periodFilter}
-                  onChange={(e) => setPeriodFilter(e.target.value as any)}
+                  onChange={(e) => setPeriodFilter(e.target.value as typeof periodFilter)}
                 >
                   <option value="Year-to-date">Year-to-date</option>
                   <option value="Month-to-date">Month-to-date</option>
@@ -467,8 +465,6 @@ export default function DashboardPage() {
                         stroke="#ffffff"
                         strokeWidth="2"
                         style={{ cursor: 'pointer' }}
-                        onMouseEnter={() => setChartHover({ x: pt.x, y: pt.y, label: pt.label, val: `Total: ${pt.rev} | Online: ${pt.online}` })}
-                        onMouseLeave={() => setChartHover(null)}
                       />
                     ))}
                   </svg>
@@ -612,8 +608,6 @@ export default function DashboardPage() {
                         stroke="#ffffff"
                         strokeWidth="2"
                         style={{ cursor: 'pointer' }}
-                        onMouseEnter={() => setChartHover({ x: pt.x, y: pt.y, label: pt.label, val: pt.rev })}
-                        onMouseLeave={() => setChartHover(null)}
                       />
                     ))}
                   </svg>
@@ -675,7 +669,7 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedSalesTeam.map((st: any, idx: number) => (
+                    {sortedSalesTeam.map((st, idx: number) => (
                       <tr key={st.id || idx}>
                         <td className={styles.rankNum}>{idx + 1}</td>
                         <td>
@@ -718,7 +712,7 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {taskCompletions.map((tc: any, idx: number) => {
+                    {taskCompletions.map((tc, idx: number) => {
                       const total = tc.completed + tc.inProgress;
                       const pct = total > 0 ? Math.round((tc.completed / total) * 100) : 0;
 

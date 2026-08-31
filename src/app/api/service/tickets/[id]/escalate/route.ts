@@ -35,26 +35,30 @@ export async function POST(
 
     let issue = ticket.issue;
     if (!issue) {
-      issue = await prisma.issue.create({
-        data: {
-          issueKey,
-          title: `${ticket.category}: ${ticket.subject}`,
-          affectedCustomer: ticket.customerName,
-          status: 'Escalated',
-          assignedAgent: ticket.agentName || 'Chris Evans',
-          avatar: ticket.avatar || '/avatars/user1.jpg',
-          slaRemaining,
-          severity,
-        },
+      const issueData = {
+        issueKey,
+        title: `${ticket.category}: ${ticket.subject}`,
+        affectedCustomer: ticket.customerName,
+        status: 'Escalated',
+        assignedAgent: ticket.agentName || 'Chris Evans',
+        avatar: ticket.avatar || '/avatars/user1.jpg',
+        slaRemaining,
+        severity,
+      };
+
+      const result = await prisma.$transaction(async (tx) => {
+        const newIssue = await tx.issue.create({ data: issueData });
+        await tx.ticket.update({
+          where: { id: ticketId },
+          data: {
+            issueId: newIssue.id,
+            status: 'Pending',
+          },
+        });
+        return newIssue;
       });
 
-      await prisma.ticket.update({
-        where: { id: ticketId },
-        data: {
-          issueId: issue.id,
-          status: 'Pending',
-        },
-      });
+      issue = result;
     }
 
     return NextResponse.json({
@@ -64,10 +68,11 @@ export async function POST(
       slaRemaining: issue.slaRemaining,
       severity: issue.severity,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Escalate POST error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { message: 'Failed to escalate ticket in database', error: error?.message || String(error) },
+      { message: 'Failed to escalate ticket in database', error: errorMessage },
       { status: 500 }
     );
   }

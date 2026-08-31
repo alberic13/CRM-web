@@ -1,14 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { AuthUser } from '@/types/user';
 import styles from './Header.module.css';
 
 interface HeaderProps {
-  user?: {
+  user?: AuthUser | {
     name?: string;
     email?: string;
     role?: string;
-  };
+  } | null;
   onMenuToggle?: () => void;
 }
 

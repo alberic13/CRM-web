@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') || '';
     const issueKey = searchParams.get('issueKey') || '';
 
-    const where: any = {};
+    const where: Prisma.IssueWhereInput = {};
     if (issueKey) {
       where.issueKey = issueKey;
     } else if (search) {
@@ -27,10 +28,11 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({ issues });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Issues GET error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { message: 'Failed to fetch issues from database', error: error?.message || String(error) },
+      { message: 'Failed to fetch issues from database', error: errorMessage },
       { status: 500 }
     );
   }

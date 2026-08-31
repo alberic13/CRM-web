@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './customers.module.css';
 
 interface Customer {
@@ -19,7 +20,7 @@ interface Customer {
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [regionFilter, setRegionFilter] = useState('All');
@@ -34,7 +35,7 @@ export default function CustomersPage() {
   const [status, setStatus] = useState<'Loyal' | 'New' | 'Lost'>('New');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchCustomers = () => {
+  const fetchCustomers = useCallback(() => {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (regionFilter !== 'All') params.append('region', regionFilter);
@@ -46,7 +47,7 @@ export default function CustomersPage() {
         if (data.customers) setCustomers(data.customers);
       })
       .catch((err) => console.error('Error loading customers:', err));
-  };
+  }, [search, regionFilter, statusFilter]);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -58,7 +59,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     fetchCustomers();
-  }, [search, regionFilter, statusFilter]);
+  }, [fetchCustomers]);
 
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +78,7 @@ export default function CustomersPage() {
       setName('');
       setEmail('');
       fetchCustomers();
-    } catch (err) {
+    } catch {
       alert('An error occurred while adding customer');
     } finally {
       setIsSubmitting(false);
@@ -296,7 +297,7 @@ export default function CustomersPage() {
                 <select
                   className={styles.input}
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as any)}
+                  onChange={(e) => setStatus(e.target.value as 'Loyal' | 'New' | 'Lost')}
                 >
                   <option value="New">New</option>
                   <option value="Loyal">Loyal</option>

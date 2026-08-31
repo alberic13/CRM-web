@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './queries.module.css';
 
 interface Issue {
@@ -32,9 +33,8 @@ interface Ticket {
 }
 
 export default function CustomerQueriesPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
 
@@ -66,31 +66,31 @@ export default function CustomerQueriesPage() {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   useEffect(() => {
+    let ignore = false;
+
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.user) setUser(data.user);
+        if (!ignore && data.user) setUser(data.user);
       })
       .catch((err) => console.log('Auth check error:', err));
 
-    fetchTickets();
-  }, []);
-
-  const fetchTickets = async () => {
-    try {
-      const res = await fetch('/api/service/tickets');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.tickets) {
+    fetch('/api/service/tickets')
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (!ignore && data && data.tickets) {
           setTickets(data.tickets);
         }
-      }
-    } catch (err) {
-      console.warn('Fetch tickets error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      })
+      .catch((err) => console.warn('Fetch tickets error:', err));
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const handleAddTicket = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,7 +225,7 @@ export default function CustomerQueriesPage() {
       if (res.ok) {
         const data = await res.json();
         const updatedIssue: Issue = data.issue || {
-          issueKey: data.issueKey || `ISS-${Math.floor(406 + Math.random() * 100)}`,
+          issueKey: data.issueKey || `ISS-${ticket.ticketNo.replace('TCK-', '')}`,
           title: `${ticket.category}: ${ticket.subject}`,
           status: 'Escalated',
           slaRemaining: data.slaRemaining || '4h 00m',
@@ -703,7 +703,7 @@ export default function CustomerQueriesPage() {
                 <select
                   className={styles.input}
                   value={priority}
-                  onChange={(e) => setPriority(e.target.value as any)}
+                  onChange={(e) => setPriority(e.target.value as Ticket['priority'])}
                 >
                   <option value="Urgent">Urgent</option>
                   <option value="High">High</option>
@@ -789,7 +789,7 @@ export default function CustomerQueriesPage() {
                 <select
                   className={styles.input}
                   value={editPriority}
-                  onChange={(e) => setEditPriority(e.target.value as any)}
+                  onChange={(e) => setEditPriority(e.target.value as Ticket['priority'])}
                 >
                   <option value="Urgent">Urgent</option>
                   <option value="High">High</option>
@@ -803,7 +803,7 @@ export default function CustomerQueriesPage() {
                 <select
                   className={styles.input}
                   value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value as any)}
+                  onChange={(e) => setEditStatus(e.target.value as Ticket['status'])}
                 >
                   <option value="Open">Open</option>
                   <option value="Pending">Pending</option>

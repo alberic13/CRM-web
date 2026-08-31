@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './clients.module.css';
 
 interface ClientItem {
@@ -20,8 +21,17 @@ interface SalesCustomer {
   region?: string;
 }
 
+const DEFAULT_SALES_CUSTOMERS: SalesCustomer[] = [
+  { id: 'c1', name: 'Tau Corporation', region: 'North America' },
+  { id: 'c2', name: 'Pi Enterprises', region: 'Europe' },
+  { id: 'c3', name: 'GlobalMart Inc.', region: 'Europe' },
+  { id: 'c4', name: 'Delta Industries', region: 'Asia Pacific' },
+  { id: 'c5', name: 'Xi Group', region: 'Asia Pacific' },
+  { id: 'c6', name: 'Lambda Ltd', region: 'North America' },
+];
+
 export default function ClientsPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [salesCustomers, setSalesCustomers] = useState<SalesCustomer[]>([]);
 
@@ -49,7 +59,7 @@ export default function ClientsPage() {
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
 
   // ── Fetch clients from DB ──────────────────────────────────
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       const res = await fetch('/api/clients');
       const data = await res.json();
@@ -59,41 +69,53 @@ export default function ClientsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    let ignore = false;
+
     fetch('/api/auth/me')
       .then((res) => res.json())
-      .then((data) => { if (data.user) setUser(data.user); });
+      .then((data) => {
+        if (!ignore && data.user) setUser(data.user);
+      })
+      .catch((err) => console.log('Auth check error:', err));
 
-    fetchClients();
+    fetch('/api/clients')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!ignore) {
+          if (data.clients) setClients(data.clients);
+          setIsLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load clients:', err);
+        if (!ignore) setIsLoading(false);
+      });
 
     // Fetch Sales Customers for the dropdown
     fetch('/api/customers')
       .then((res) => res.json())
       .then((data) => {
-        if (data.customers && data.customers.length > 0) {
-          setSalesCustomers(data.customers);
-        } else {
-          setSalesCustomers([
-            { id: 'c1', name: 'Tau Corporation', region: 'North America' },
-            { id: 'c2', name: 'Pi Enterprises', region: 'Europe' },
-            { id: 'c3', name: 'GlobalMart Inc.', region: 'Europe' },
-            { id: 'c4', name: 'Delta Industries', region: 'Asia Pacific' },
-            { id: 'c5', name: 'Xi Group', region: 'Asia Pacific' },
-            { id: 'c6', name: 'Lambda Ltd', region: 'North America' },
-          ]);
+        if (!ignore) {
+          if (data.customers && data.customers.length > 0) {
+            setSalesCustomers(data.customers);
+          } else {
+            setSalesCustomers(DEFAULT_SALES_CUSTOMERS);
+          }
         }
       })
       .catch(() => {
-        setSalesCustomers([
-          { id: 'c1', name: 'Tau Corporation', region: 'North America' },
-          { id: 'c2', name: 'Pi Enterprises', region: 'Europe' },
-          { id: 'c3', name: 'GlobalMart Inc.', region: 'Europe' },
-          { id: 'c4', name: 'Delta Industries', region: 'Asia Pacific' },
-        ]);
+        if (!ignore) {
+          setSalesCustomers(DEFAULT_SALES_CUSTOMERS);
+        }
       });
-  }, []);
+
+    return () => {
+      ignore = true;
+    };
+  }, [fetchClients]);
 
   // ── Sales Customer Selection ──────────────────────────────
   const handleSelectSalesCustomer = (customerId: string) => {
@@ -133,7 +155,7 @@ export default function ClientsPage() {
       setIndustry('Technology');
       setRegion('North America');
       setTier('Enterprise Tier 1');
-    } catch (err) {
+    } catch {
       alert('An error occurred while saving the client.');
     } finally {
       setIsSubmitting(false);
@@ -166,7 +188,7 @@ export default function ClientsPage() {
       await fetchClients();
       setIsEditModalOpen(false);
       setEditingClient(null);
-    } catch (err) {
+    } catch {
       alert('An error occurred while updating the client.');
     } finally {
       setIsEditSubmitting(false);
@@ -181,33 +203,9 @@ export default function ClientsPage() {
       const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
       if (!res.ok) { alert('Failed to delete client.'); return; }
       await fetchClients();
-    } catch (err) {
+    } catch {
       alert('An error occurred while deleting the client.');
     }
-  };
-
-  // ── Export to CSV ─────────────────────────────────────────
-  const handleExportCsv = () => {
-    if (filteredClients.length === 0) { alert('No client data available to export.'); return; }
-
-    const headers = ['Client Name', 'Industry', 'Region', 'Tier Category'];
-    const rows = filteredClients.map((c) => [
-      `"${c.name.replace(/"/g, '""')}"`,
-      `"${c.industry.replace(/"/g, '""')}"`,
-      `"${c.region.replace(/"/g, '""')}"`,
-      `"${c.tier.replace(/"/g, '""')}"`,
-    ]);
-
-    const csvString = '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\r\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `clients_export_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   // ── Filtered Clients ──────────────────────────────────────
@@ -226,6 +224,31 @@ export default function ClientsPage() {
       return true;
     });
   }, [clients, tierFilter, regionFilter, search]);
+
+  // ── Export to CSV ─────────────────────────────────────────
+  const handleExportCsv = () => {
+    if (filteredClients.length === 0) { alert('No client data available to export.'); return; }
+
+    const headers = ['Client Name', 'Industry', 'Region', 'Tier Category'];
+    const rows = filteredClients.map((c) => [
+      `"${c.name.replace(/"/g, '""')}"`,
+      `"${c.industry.replace(/"/g, '""')}"`,
+      `"${c.region.replace(/"/g, '""')}"`,
+      `"${c.tier.replace(/"/g, '""')}"`,
+    ]);
+
+    const csvString = '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\r\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `clients_export_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className={styles.layout}>

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma, OpportunityStatus } from '@prisma/client';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -20,17 +21,17 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
 
-    const where: any = {};
+    const where: Prisma.OpportunityWhereInput = {};
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { customerName: { contains: search } },
-        { opportunityNo: { contains: search } },
-        { ownerName: { contains: search } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { customerName: { contains: search, mode: 'insensitive' } },
+        { opportunityNo: { contains: search, mode: 'insensitive' } },
+        { ownerName: { contains: search, mode: 'insensitive' } },
       ];
     }
     if (status && status !== 'All') {
-      where.status = status;
+      where.status = status as OpportunityStatus;
     }
 
     const opportunities = await prisma.opportunity.findMany({

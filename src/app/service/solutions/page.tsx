@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './solutions.module.css';
 
 type ArticleCategory = 'Technical Integration' | 'Billing & Subscription' | 'Account Security' | 'API Reference';
@@ -26,7 +27,7 @@ const CATEGORIES: ArticleCategory[] = [
 ];
 
 export default function SolutionsLibraryPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,29 +45,31 @@ export default function SolutionsLibraryPage() {
   // Preview modal state
   const [previewArticle, setPreviewArticle] = useState<SolutionArticle | null>(null);
 
-  const fetchArticles = async () => {
-    try {
-      const res = await fetch('/api/service/solutions', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.articles) {
-          setArticles(data.articles);
-        }
-      }
-    } catch (err) {
-      console.warn('Fetch articles error:', err);
-    }
-  };
-
   useEffect(() => {
+    let ignore = false;
+
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.user) setUser(data.user);
+        if (!ignore && data.user) setUser(data.user);
       })
       .catch((err) => console.log('Auth check error:', err));
 
-    fetchArticles();
+    fetch('/api/service/solutions', { cache: 'no-store' })
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (!ignore && data && data.articles) {
+          setArticles(data.articles);
+        }
+      })
+      .catch((err) => console.warn('Fetch articles error:', err));
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
 
@@ -130,7 +133,7 @@ export default function SolutionsLibraryPage() {
       setFormContent('');
       setFormError('');
       setShowCreateModal(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Create article error:', err);
       const fallbackArticle: SolutionArticle = {
         id: `art-${Date.now()}`,

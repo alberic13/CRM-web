@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 
 export default function MarketingCampaignsPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     fetch('/api/auth/me')

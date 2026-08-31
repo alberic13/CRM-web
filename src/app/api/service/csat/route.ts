@@ -86,7 +86,7 @@ const DEFAULT_REVIEWS = [
   },
 ];
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const count = await prisma.csatReview.count();
     if (count === 0) {
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
         csatScore: `${csatPercent}%`,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('CSAT GET error:', error);
     return NextResponse.json({ message: 'Failed to fetch CSAT reviews from database' }, { status: 500 });
   }
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ message: 'CSAT review added and saved in database', review: newReview }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('CSAT POST error:', error);
     return NextResponse.json({ message: 'Failed to create CSAT review in database' }, { status: 500 });
   }

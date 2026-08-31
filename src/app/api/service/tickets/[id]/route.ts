@@ -78,17 +78,18 @@ export async function PATCH(
       message: 'Ticket and connected Issue updated successfully in database',
       ticket: finalTicket,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Ticket PATCH error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { message: 'Failed to update ticket in database', error: error?.message || String(error) },
+      { message: 'Failed to update ticket in database', error: errorMessage },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -119,10 +120,11 @@ export async function DELETE(
       id: ticketId,
       issueId: linkedIssueId,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Ticket DELETE error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { message: 'Failed to delete ticket from database', error: error?.message || String(error) },
+      { message: 'Failed to delete ticket from database', error: errorMessage },
       { status: 500 }
     );
   }

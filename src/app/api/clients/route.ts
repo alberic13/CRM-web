@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
     const tier = searchParams.get('tier') || '';
     const region = searchParams.get('region') || '';
 
-    const where: any = {};
+    const where: Prisma.ClientWhereInput = {};
 
     if (search) {
       where.OR = [

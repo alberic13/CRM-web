@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './opportunities.module.css';
 
 interface OpportunityItem {
@@ -19,7 +20,7 @@ interface OpportunityItem {
 }
 
 // Helper to format dates for web table display (M/D/YYYY)
-const formatDateForDisplay = (dateInput: any): string => {
+const formatDateForDisplay = (dateInput: string | number | Date | null | undefined): string => {
   if (!dateInput) return '-';
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return String(dateInput);
@@ -27,7 +28,7 @@ const formatDateForDisplay = (dateInput: any): string => {
 };
 
 // Helper to format dates for Excel Export (forces text formula `=" M/D/YYYY "` so Excel NEVER displays `#####`)
-const formatDateForExcelCsv = (dateInput: any): string => {
+const formatDateForExcelCsv = (dateInput: string | number | Date | null | undefined): string => {
   if (!dateInput) return '"-"';
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return `=" ${String(dateInput)} "`;
@@ -35,8 +36,23 @@ const formatDateForExcelCsv = (dateInput: any): string => {
   return `=" ${formatted} "`;
 };
 
+const DEFAULT_OPPORTUNITIES: OpportunityItem[] = [
+  { id: '110', opportunityNo: '110', name: 'Project Theta', status: 'Pending', revenue: 23000, expCloseDate: '4/14/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '3/21/2024', notes: 'Proposal submitted' },
+  { id: '111', opportunityNo: '111', name: 'Deal Beta', status: 'Won', revenue: 25000, expCloseDate: '5/1/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '3/21/2024', notes: 'Deal finalized' },
+  { id: '112', opportunityNo: '112', name: 'Project Omega', status: 'InProgress', revenue: 14000, expCloseDate: '4/17/2024', customerName: 'Pi Enterprises', ownerName: 'Andy Chen', creationDate: '3/17/2024', notes: 'Discussing terms' },
+  { id: '113', opportunityNo: '113', name: 'Deal Gamma', status: 'Lost', revenue: 0, expCloseDate: '3/29/2024', customerName: 'Xi Group', ownerName: 'Mary Foo', creationDate: '3/16/2024', notes: 'Decision postponed' },
+  { id: '114', opportunityNo: '114', name: 'Deal Alpha', status: 'Pending', revenue: 22000, expCloseDate: '6/11/2024', customerName: 'Lambda Ltd', ownerName: 'Andy Chen', creationDate: '3/7/2024', notes: 'Sending proposal' },
+  { id: '115', opportunityNo: '115', name: 'Project Theta', status: 'Pending', revenue: 23000, expCloseDate: '4/14/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '3/1/2024', notes: 'Proposal submitted' },
+  { id: '116', opportunityNo: '116', name: 'Deal XYZ', status: 'Pending', revenue: 23000, expCloseDate: '5/4/2024', customerName: 'Delta Industries', ownerName: 'Peter Wu', creationDate: '2/27/2024', notes: 'Budget constraints' },
+  { id: '117', opportunityNo: '117', name: 'Project Theta', status: 'InProgress', revenue: 13000, expCloseDate: '7/10/2024', customerName: 'Iota Corporation', ownerName: 'Lucy Tan', creationDate: '2/21/2024', notes: 'Sent follow-up email' },
+  { id: '118', opportunityNo: '118', name: 'Deal XYZ', status: 'InProgress', revenue: 16000, expCloseDate: '4/14/2024', customerName: 'Big Company Ltd', ownerName: 'Peter Wu', creationDate: '2/19/2024', notes: 'Proposal submitted' },
+  { id: '119', opportunityNo: '119', name: 'Project Theta', status: 'Pending', revenue: 3000, expCloseDate: '6/14/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '2/19/2024', notes: 'Sent follow-up email' },
+  { id: '120', opportunityNo: '120', name: 'Enterprise SaaS Renewal', status: 'Won', revenue: 45000, expCloseDate: '8/12/2024', customerName: 'Apex Innovations', ownerName: 'Lucy Tan', creationDate: '1/15/2024', notes: 'Multi-year contract signed' },
+  { id: '121', opportunityNo: '121', name: 'Cloud Migration Pilot', status: 'InProgress', revenue: 18500, expCloseDate: '9/1/2024', customerName: 'Nexus Global', ownerName: 'Andy Chen', creationDate: '1/10/2024', notes: 'Proof of concept stage' },
+];
+
 export default function OpportunitiesPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
@@ -65,28 +81,24 @@ export default function OpportunitiesPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<OpportunityItem | null>(null);
 
-  const defaultOpportunities: OpportunityItem[] = [
-    { id: '110', opportunityNo: '110', name: 'Project Theta', status: 'Pending', revenue: 23000, expCloseDate: '4/14/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '3/21/2024', notes: 'Proposal submitted' },
-    { id: '111', opportunityNo: '111', name: 'Deal Beta', status: 'Won', revenue: 25000, expCloseDate: '5/1/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '3/21/2024', notes: 'Deal finalized' },
-    { id: '112', opportunityNo: '112', name: 'Project Omega', status: 'InProgress', revenue: 14000, expCloseDate: '4/17/2024', customerName: 'Pi Enterprises', ownerName: 'Andy Chen', creationDate: '3/17/2024', notes: 'Discussing terms' },
-    { id: '113', opportunityNo: '113', name: 'Deal Gamma', status: 'Lost', revenue: 0, expCloseDate: '3/29/2024', customerName: 'Xi Group', ownerName: 'Mary Foo', creationDate: '3/16/2024', notes: 'Decision postponed' },
-    { id: '114', opportunityNo: '114', name: 'Deal Alpha', status: 'Pending', revenue: 22000, expCloseDate: '6/11/2024', customerName: 'Lambda Ltd', ownerName: 'Andy Chen', creationDate: '3/7/2024', notes: 'Sending proposal' },
-    { id: '115', opportunityNo: '115', name: 'Project Theta', status: 'Pending', revenue: 23000, expCloseDate: '4/14/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '3/1/2024', notes: 'Proposal submitted' },
-    { id: '116', opportunityNo: '116', name: 'Deal XYZ', status: 'Pending', revenue: 23000, expCloseDate: '5/4/2024', customerName: 'Delta Industries', ownerName: 'Peter Wu', creationDate: '2/27/2024', notes: 'Budget constraints' },
-    { id: '117', opportunityNo: '117', name: 'Project Theta', status: 'InProgress', revenue: 13000, expCloseDate: '7/10/2024', customerName: 'Iota Corporation', ownerName: 'Lucy Tan', creationDate: '2/21/2024', notes: 'Sent follow-up email' },
-    { id: '118', opportunityNo: '118', name: 'Deal XYZ', status: 'InProgress', revenue: 16000, expCloseDate: '4/14/2024', customerName: 'Big Company Ltd', ownerName: 'Peter Wu', creationDate: '2/19/2024', notes: 'Proposal submitted' },
-    { id: '119', opportunityNo: '119', name: 'Project Theta', status: 'Pending', revenue: 3000, expCloseDate: '6/14/2024', customerName: 'Tau Corporation', ownerName: 'Lucy Tan', creationDate: '2/19/2024', notes: 'Sent follow-up email' },
-    { id: '120', opportunityNo: '120', name: 'Enterprise SaaS Renewal', status: 'Won', revenue: 45000, expCloseDate: '8/12/2024', customerName: 'Apex Innovations', ownerName: 'Lucy Tan', creationDate: '1/15/2024', notes: 'Multi-year contract signed' },
-    { id: '121', opportunityNo: '121', name: 'Cloud Migration Pilot', status: 'InProgress', revenue: 18500, expCloseDate: '9/1/2024', customerName: 'Nexus Global', ownerName: 'Andy Chen', creationDate: '1/10/2024', notes: 'Proof of concept stage' },
-  ];
-
-  const fetchOpportunities = () => {
+  const fetchOpportunities = useCallback(() => {
     fetch('/api/opportunities')
       .then((res) => res.json())
       .then((resData) => {
         if (resData.opportunities && resData.opportunities.length > 0) {
-          const formatted = resData.opportunities.map((o: any) => ({
-            id: o.opportunityNo || o.id,
+          const formatted = resData.opportunities.map((o: {
+            id?: string;
+            opportunityNo: string;
+            name: string;
+            status: OpportunityItem['status'];
+            revenue: number;
+            expCloseDate: string;
+            customerName: string;
+            ownerName: string;
+            creationDate: string;
+            notes?: string;
+          }) => ({
+            id: o.opportunityNo || o.id || '',
             opportunityNo: o.opportunityNo,
             name: o.name,
             status: o.status,
@@ -99,11 +111,11 @@ export default function OpportunitiesPage() {
           }));
           setOpportunities(formatted);
         } else {
-          setOpportunities(defaultOpportunities);
+          setOpportunities(DEFAULT_OPPORTUNITIES);
         }
       })
-      .catch(() => setOpportunities(defaultOpportunities));
-  };
+      .catch(() => setOpportunities(DEFAULT_OPPORTUNITIES));
+  }, []);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -113,7 +125,7 @@ export default function OpportunitiesPage() {
       });
 
     fetchOpportunities();
-  }, []);
+  }, [fetchOpportunities]);
 
   // Real-time Computed Filtered Opportunities
   const filteredOpportunities = useMemo(() => {
@@ -226,7 +238,8 @@ export default function OpportunitiesPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `opportunities_export_${Date.now()}.csv`);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `opportunities_export_${dateStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -305,7 +318,7 @@ export default function OpportunitiesPage() {
                   className={styles.selectInput}
                   value={timeFilter}
                   onChange={(e) => {
-                    setTimeFilter(e.target.value as any);
+                    setTimeFilter(e.target.value as typeof timeFilter);
                     setCurrentPage(1);
                   }}
                 >
@@ -578,7 +591,7 @@ export default function OpportunitiesPage() {
                 <select
                   className={styles.input}
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as any)}
+                  onChange={(e) => setStatus(e.target.value as OpportunityItem['status'])}
                 >
                   <option value="Pending">Pending</option>
                   <option value="Won">Won</option>
@@ -682,7 +695,7 @@ export default function OpportunitiesPage() {
                 <select
                   className={styles.input}
                   value={editingItem.status}
-                  onChange={(e) => setEditingItem({ ...editingItem, status: e.target.value as any })}
+                  onChange={(e) => setEditingItem({ ...editingItem, status: e.target.value as OpportunityItem['status'] })}
                 >
                   <option value="Pending">Pending</option>
                   <option value="Won">Won</option>

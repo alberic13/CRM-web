@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma, CustomerStatus } from '@prisma/client';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -19,19 +20,19 @@ export async function GET(request: Request) {
     const region = searchParams.get('region') || '';
     const status = searchParams.get('status') || '';
 
-    const where: any = {};
+    const where: Prisma.CustomerWhereInput = {};
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { email: { contains: search } },
-        { customerNo: { contains: search } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { customerNo: { contains: search, mode: 'insensitive' } },
       ];
     }
     if (region && region !== 'All') {
       where.region = region;
     }
     if (status && status !== 'All') {
-      where.status = status;
+      where.status = status as CustomerStatus;
     }
 
     const customers = await prisma.customer.findMany({

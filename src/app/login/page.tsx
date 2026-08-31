@@ -32,8 +32,9 @@ export default function LoginPage() {
 
       // Successful login -> Redirect to dashboard
       router.push('/dashboard');
-    } catch (err: any) {
-      setErrorMsg(err.message || 'A system error occurred');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'A system error occurred';
+      setErrorMsg(msg);
     } finally {
       setIsLoading(false);
     }

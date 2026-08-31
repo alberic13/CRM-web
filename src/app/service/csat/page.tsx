@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './csat.module.css';
 
 interface ReviewFeedback {
@@ -98,7 +99,7 @@ const DEFAULT_REVIEWS: ReviewFeedback[] = [
 ];
 
 export default function CustomerSatisfactionPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [reviews, setReviews] = useState<ReviewFeedback[]>(DEFAULT_REVIEWS);
@@ -109,32 +110,32 @@ export default function CustomerSatisfactionPage() {
   });
 
   useEffect(() => {
+    let ignore = false;
+
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.user) setUser(data.user);
+        if (!ignore && data.user) setUser(data.user);
       })
       .catch((err) => console.log('Auth check error:', err));
 
-    fetchCsat();
-  }, []);
+    fetch('/api/service/csat')
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (!ignore && data) {
+          if (data.reviews && data.reviews.length > 0) setReviews(data.reviews);
+          if (data.stats) setStats(data.stats);
+        }
+      })
+      .catch((err) => console.warn('Using default CSAT reviews:', err));
 
-  const fetchCsat = async () => {
-    try {
-      const res = await fetch('/api/service/csat');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.reviews && data.reviews.length > 0) {
-          setReviews(data.reviews);
-        }
-        if (data.stats) {
-          setStats(data.stats);
-        }
-      }
-    } catch (err) {
-      console.warn('Using default CSAT reviews:', err);
-    }
-  };
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   return (
     <div className={styles.layout}>
@@ -207,7 +208,7 @@ export default function CustomerSatisfactionPage() {
                     </div>
                   </div>
 
-                  <p className={styles.commentText}>"{rev.comment}"</p>
+                  <p className={styles.commentText}>&quot;{rev.comment}&quot;</p>
 
                   <div className={styles.reviewFooter}>
                     <span className={styles.agentTag}>

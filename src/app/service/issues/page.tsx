@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './issues.module.css';
 
 interface IssueItem {
@@ -26,33 +27,35 @@ function IssueTrackingContent() {
   const searchParams = useSearchParams();
   const highlightKey = searchParams.get('issueKey') || '';
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [issuesList, setIssuesList] = useState<IssueItem[]>([]);
 
   useEffect(() => {
+    let ignore = false;
+
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.user) setUser(data.user);
+        if (!ignore && data.user) setUser(data.user);
       });
 
-    fetchIssues();
-  }, []);
-
-  const fetchIssues = async () => {
-    try {
-      const res = await fetch('/api/service/issues');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.issues) {
+    fetch('/api/service/issues')
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (!ignore && data && data.issues) {
           setIssuesList(data.issues);
         }
-      }
-    } catch (err) {
-      console.warn('Fetch issues error:', err);
-    }
-  };
+      })
+      .catch((err) => console.warn('Fetch issues error:', err));
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   return (
     <div className={styles.layout}>

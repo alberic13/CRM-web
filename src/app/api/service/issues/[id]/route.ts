@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -36,10 +36,11 @@ export async function DELETE(
       id: issueId,
       ticketId,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Issue DELETE error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { message: 'Failed to delete issue from database', error: error?.message || String(error) },
+      { message: 'Failed to delete issue from database', error: errorMessage },
       { status: 500 }
     );
   }

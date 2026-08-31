@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './reports.module.css';
 
 interface TrendItem {
@@ -11,8 +12,23 @@ interface TrendItem {
   revenue: number;
 }
 
+const BASE_TREND_DATA = [
+  { month: '4/23', volume: 290, revenue: 390 },
+  { month: '5/23', volume: 210, revenue: 300 },
+  { month: '6/23', volume: 160, revenue: 380 },
+  { month: '7/23', volume: 190, revenue: 360 },
+  { month: '8/23', volume: 265, revenue: 470 },
+  { month: '9/23', volume: 240, revenue: 330 },
+  { month: '10/23', volume: 80, revenue: 540 },
+  { month: '11/23', volume: 170, revenue: 560 },
+  { month: '12/23', volume: 295, revenue: 330 },
+  { month: '1/24', volume: 120, revenue: 320 },
+  { month: '2/24', volume: 225, revenue: 410 },
+  { month: '3/24', volume: 200, revenue: 480 },
+];
+
 export default function SalesReportsPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Filter States
@@ -83,23 +99,8 @@ export default function SalesReportsPage() {
   // Dynamic Trend Data
   const months = ['4/23', '5/23', '6/23', '7/23', '8/23', '9/23', '10/23', '11/23', '12/23', '1/24', '2/24', '3/24'];
 
-  const baseTrendData = [
-    { month: '4/23', volume: 290, revenue: 390 },
-    { month: '5/23', volume: 210, revenue: 300 },
-    { month: '6/23', volume: 160, revenue: 380 },
-    { month: '7/23', volume: 190, revenue: 360 },
-    { month: '8/23', volume: 265, revenue: 470 },
-    { month: '9/23', volume: 240, revenue: 330 },
-    { month: '10/23', volume: 80, revenue: 540 },
-    { month: '11/23', volume: 170, revenue: 560 },
-    { month: '12/23', volume: 295, revenue: 330 },
-    { month: '1/24', volume: 120, revenue: 320 },
-    { month: '2/24', volume: 225, revenue: 410 },
-    { month: '3/24', volume: 200, revenue: 480 },
-  ];
-
   const trendData: TrendItem[] = useMemo(() => {
-    return baseTrendData.map((d) => ({
+    return BASE_TREND_DATA.map((d) => ({
       month: d.month,
       volume: Math.max(10, Math.round(d.volume * Math.min(1.5, scaleFactor * 1.2))),
       revenue: Math.max(20, Math.round(d.revenue * Math.min(1.5, scaleFactor * 1.1))),
@@ -269,7 +270,8 @@ export default function SalesReportsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `sales_report_${Date.now()}.csv`);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `sales_report_${dateStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

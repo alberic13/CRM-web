@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthUser } from '@/types/user';
 import styles from './segmentation.module.css';
 
 interface CustomerRow {
@@ -18,8 +19,21 @@ interface CustomerRow {
   firstPurchase: string;
 }
 
+const DEFAULT_CUSTOMERS_DATA: CustomerRow[] = [
+  { id: '13846', customerNo: '13846', name: 'Bright Solutions', age: 34, region: 'North America', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '3/21/2024' },
+  { id: '98745', customerNo: '98745', name: 'GlobalMart', age: 23, region: 'Europe', purchaseNum: 4, source: 'Retail', state: 'Loyal', lastPurchase: '5/1/2024', firstPurchase: '3/21/2024' },
+  { id: '34972', customerNo: '34972', name: 'Tech Innovations', age: 38, region: 'Asia Pacific', purchaseNum: 8, source: 'Online', state: 'Loyal', lastPurchase: '4/17/2024', firstPurchase: '3/17/2024' },
+  { id: '29373', customerNo: '29373', name: 'Blue Horizon', age: 25, region: 'Europe', purchaseNum: 2, source: 'Online', state: 'New', lastPurchase: '3/29/2024', firstPurchase: '3/16/2024' },
+  { id: '48759', customerNo: '48759', name: 'BestBuyer', age: 41, region: 'North America', purchaseNum: 1, source: 'Online', state: 'New', lastPurchase: '6/11/2024', firstPurchase: '3/7/2024' },
+  { id: '18673', customerNo: '18673', name: 'Alpha Solutions', age: 42, region: 'Asia Pacific', purchaseNum: 1, source: 'Retail', state: 'New', lastPurchase: '4/14/2024', firstPurchase: '3/1/2024' },
+  { id: '13978', customerNo: '13978', name: 'Prime Goods', age: 29, region: 'North America', purchaseNum: 4, source: 'Online', state: 'Loyal', lastPurchase: '5/4/2024', firstPurchase: '2/27/2024' },
+  { id: '16483', customerNo: '16483', name: 'Wise Shoppers', age: 35, region: 'Europe', purchaseNum: 1, source: 'Online', state: 'New', lastPurchase: '7/10/2024', firstPurchase: '2/21/2024' },
+  { id: '24567', customerNo: '24567', name: 'Quick Solutions', age: 38, region: 'Asia Pacific', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '2/19/2024' },
+  { id: '23565', customerNo: '23565', name: 'Visionary Tech', age: 53, region: 'Europe', purchaseNum: 2, source: 'Retail', state: 'Lost', lastPurchase: '6/14/2022', firstPurchase: '2/19/2024' },
+];
+
 export default function SegmentationPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Filter States
@@ -46,26 +60,24 @@ export default function SegmentationPage() {
   // Dynamic Customers State from Database API + Sample Items
   const [dbCustomers, setDbCustomers] = useState<CustomerRow[]>([]);
 
-  const defaultCustomersData: CustomerRow[] = [
-    { id: '13846', customerNo: '13846', name: 'Bright Solutions', age: 34, region: 'North America', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '3/21/2024' },
-    { id: '98745', customerNo: '98745', name: 'GlobalMart', age: 23, region: 'Europe', purchaseNum: 4, source: 'Retail', state: 'Loyal', lastPurchase: '5/1/2024', firstPurchase: '3/21/2024' },
-    { id: '34972', customerNo: '34972', name: 'Tech Innovations', age: 38, region: 'Asia Pacific', purchaseNum: 8, source: 'Online', state: 'Loyal', lastPurchase: '4/17/2024', firstPurchase: '3/17/2024' },
-    { id: '29373', customerNo: '29373', name: 'Blue Horizon', age: 25, region: 'Europe', purchaseNum: 2, source: 'Online', state: 'New', lastPurchase: '3/29/2024', firstPurchase: '3/16/2024' },
-    { id: '48759', customerNo: '48759', name: 'BestBuyer', age: 41, region: 'North America', purchaseNum: 1, source: 'Online', state: 'New', lastPurchase: '6/11/2024', firstPurchase: '3/7/2024' },
-    { id: '18673', customerNo: '18673', name: 'Alpha Solutions', age: 42, region: 'Asia Pacific', purchaseNum: 1, source: 'Retail', state: 'New', lastPurchase: '4/14/2024', firstPurchase: '3/1/2024' },
-    { id: '13978', customerNo: '13978', name: 'Prime Goods', age: 29, region: 'North America', purchaseNum: 4, source: 'Online', state: 'Loyal', lastPurchase: '5/4/2024', firstPurchase: '2/27/2024' },
-    { id: '16483', customerNo: '16483', name: 'Wise Shoppers', age: 35, region: 'Europe', purchaseNum: 1, source: 'Online', state: 'New', lastPurchase: '7/10/2024', firstPurchase: '2/21/2024' },
-    { id: '24567', customerNo: '24567', name: 'Quick Solutions', age: 38, region: 'Asia Pacific', purchaseNum: 5, source: 'Online', state: 'Loyal', lastPurchase: '4/14/2024', firstPurchase: '2/19/2024' },
-    { id: '23565', customerNo: '23565', name: 'Visionary Tech', age: 53, region: 'Europe', purchaseNum: 2, source: 'Retail', state: 'Lost', lastPurchase: '6/14/2022', firstPurchase: '2/19/2024' },
-  ];
-
   // Fetch Customers from Database API
   const fetchCustomers = () => {
     fetch('/api/customers')
       .then((res) => res.json())
       .then((data) => {
         if (data.customers && Array.isArray(data.customers)) {
-          const mapped: CustomerRow[] = data.customers.map((c: any) => ({
+          const mapped: CustomerRow[] = data.customers.map((c: {
+            id: string;
+            customerNo?: string;
+            name: string;
+            age?: number;
+            region?: string;
+            purchaseNum?: number;
+            source?: string;
+            status?: string;
+            lastPurchase?: string;
+            createdAt?: string;
+          }) => ({
             id: c.id,
             customerNo: c.customerNo || Math.floor(10000 + Math.random() * 90000).toString(),
             name: c.name,
@@ -95,7 +107,7 @@ export default function SegmentationPage() {
 
   // Combined Customers Data
   const customersData = useMemo(() => {
-    const combined = [...dbCustomers, ...defaultCustomersData];
+    const combined = [...dbCustomers, ...DEFAULT_CUSTOMERS_DATA];
     const uniqueMap = new Map();
     combined.forEach((item) => {
       if (!uniqueMap.has(item.customerNo)) {
@@ -231,7 +243,8 @@ export default function SegmentationPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `customer_segmentation_${Date.now()}.csv`;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.download = `customer_segmentation_${dateStr}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -240,7 +253,7 @@ export default function SegmentationPage() {
 
   // Filter Scale Factor Calculation
   const scaleFactor = useMemo(() => {
-    let factor = filteredCustomers.length / (customersData.length || 1);
+    const factor = filteredCustomers.length / (customersData.length || 1);
     return Math.max(0.1, factor);
   }, [filteredCustomers, customersData]);
 

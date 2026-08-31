@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
     const priority = searchParams.get('priority') || '';
     const status = searchParams.get('status') || '';
 
-    const where: any = {};
+    const where: Prisma.TicketWhereInput = {};
     if (search) {
       where.OR = [
         { ticketNo: { contains: search, mode: 'insensitive' } },
@@ -42,10 +43,11 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({ tickets });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Tickets GET error details:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { message: 'Failed to fetch tickets from database', error: error?.message || String(error) },
+      { message: 'Failed to fetch tickets from database', error: errorMessage },
       { status: 500 }
     );
   }
@@ -80,33 +82,49 @@ export async function POST(request: Request) {
       severity: priority === 'Urgent' ? 'Critical' : priority === 'High' ? 'Major' : 'Minor',
     } : null;
 
-    let issueId = null;
+    let newTicket;
     if (createIssueObj) {
-      const newIssue = await prisma.issue.create({ data: createIssueObj });
-      issueId = newIssue.id;
+      newTicket = await prisma.$transaction(async (tx) => {
+        const newIssue = await tx.issue.create({ data: createIssueObj });
+        return tx.ticket.create({
+          data: {
+            ticketNo,
+            customerName,
+            avatar,
+            subject,
+            category,
+            priority,
+            status: 'Open',
+            agentName: assignedAgent,
+            createdDate,
+            issueId: newIssue.id,
+          },
+          include: { issue: true },
+        });
+      });
+    } else {
+      newTicket = await prisma.ticket.create({
+        data: {
+          ticketNo,
+          customerName,
+          avatar,
+          subject,
+          category,
+          priority,
+          status: 'Open',
+          agentName: assignedAgent,
+          createdDate,
+        },
+        include: { issue: true },
+      });
     }
 
-    const newTicket = await prisma.ticket.create({
-      data: {
-        ticketNo,
-        customerName,
-        avatar,
-        subject,
-        category,
-        priority,
-        status: 'Open',
-        agentName: assignedAgent,
-        createdDate,
-        issueId,
-      },
-      include: { issue: true },
-    });
-
     return NextResponse.json({ message: 'Ticket added successfully to database', ticket: newTicket }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Tickets POST error details:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { message: 'Failed to save ticket into database', error: error?.message || String(error) },
+      { message: 'Failed to save ticket into database', error: errorMessage },
       { status: 500 }
     );
   }
