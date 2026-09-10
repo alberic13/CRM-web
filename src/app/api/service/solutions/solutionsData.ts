@@ -1,0 +1,82 @@
+export const DEFAULT_ARTICLES = [
+  {
+    title: 'How to Resolve OAuth2 Bearer Token Renewal Delays',
+    category: 'Technical Integration',
+    views: 1420,
+    helpfulCount: 388,
+    lastUpdated: 'Aug 4, 2026',
+    summary: 'Step-by-step troubleshooting guide for configuring refresh token rotation policies in mobile and web SDKs.',
+    content:
+      '## Overview\nOAuth2 Bearer Token Renewal Delays can disrupt your application. This guide walks you through identifying and resolving common causes.\n\n## Steps\n1. Check your token expiry time in the authorization server settings.\n2. Implement refresh token rotation to keep sessions alive.\n3. Add retry logic with exponential backoff when the server returns 401.\n4. Log token refresh events to monitor renewal patterns.',
+  },
+  {
+    title: 'Updating Billing Payment Methods & Tax Invoices',
+    category: 'Billing & Subscription',
+    views: 2190,
+    helpfulCount: 612,
+    lastUpdated: 'Jul 28, 2026',
+    summary: 'Instructions on adding international credit cards, updating company VAT numbers, and downloading automated monthly PDFs.',
+    content:
+      '## Overview\nManaging billing payment methods and tax invoices is straightforward in the admin portal.\n\n## Adding a Payment Method\n1. Navigate to Settings > Billing.\n2. Click Add Payment Method.\n3. Enter your card details and save.',
+  },
+  {
+    title: 'Setting Up Multi-Factor Authentication (MFA) & IP Whitelisting',
+    category: 'Account Security',
+    views: 980,
+    helpfulCount: 245,
+    lastUpdated: 'Aug 1, 2026',
+    summary: 'Enforce TOTP authenticator apps for team workspace members and configure CIDR IP range boundaries.',
+    content:
+      '## Overview\nStrengthening account security with MFA and IP whitelisting protects your workspace from unauthorized access.\n\n## Enabling MFA\n1. Go to Settings > Security.\n2. Enable MFA and choose Authenticator App (TOTP).\n3. Scan the QR code with your authenticator app.',
+  },
+  {
+    title: 'Webhooks Rate Limits & Retry Backoff Exponential Standards',
+    category: 'API Reference',
+    views: 1750,
+    helpfulCount: 490,
+    lastUpdated: 'Jul 15, 2026',
+    summary: 'Complete technical reference detailing HTTP 429 response headers and recommended exponential backoff retry algorithms.',
+    content:
+      '## Overview\nOur webhook system enforces rate limits to ensure platform stability.\n\n## Rate Limit Headers\n- X-RateLimit-Limit: Max requests per window\n- X-RateLimit-Remaining: Requests left in current window\n- Retry-After: Seconds until limit resets',
+  },
+  {
+    title: 'Customizing Role Permissions for Manager & Agent Tiers',
+    category: 'Account Security',
+    views: 870,
+    helpfulCount: 210,
+    lastUpdated: 'Jun 30, 2026',
+    summary: 'How workspace Admins can assign fine-grained read/write privileges to sales representatives and marketing operators.',
+    content:
+      '## Overview\nRole-based access control (RBAC) gives you fine-grained control over what each team member can do.',
+  },
+  {
+    title: 'REST API Pagination & Filtering Payload Optimization',
+    category: 'API Reference',
+    views: 1340,
+    helpfulCount: 320,
+    lastUpdated: 'Aug 5, 2026',
+    summary: 'Best practices for using limit, page, and cursor params to optimize large response payloads.',
+    content:
+      '## Overview\nUse cursor-based pagination for high-volume endpoints to prevent memory spikes.',
+  },
+  {
+    title: 'Automated Billing Tier Upgrade & Refund Request SLA',
+    category: 'Billing & Subscription',
+    views: 1890,
+    helpfulCount: 540,
+    lastUpdated: 'Aug 2, 2026',
+    summary: 'Guide to proration calculations when switching between Monthly Growth and Annual Enterprise tiers.',
+    content:
+      '## Overview\nProrated credits are automatically calculated when upgrading mid-cycle.',
+  },
+  {
+    title: 'Diagnosing Webhook Payload Signature Validation Failures',
+    category: 'Technical Integration',
+    views: 1610,
+    helpfulCount: 420,
+    lastUpdated: 'Jul 22, 2026',
+    summary: 'Troubleshooting HMAC SHA-256 signature verification code snippets for Node.js, Python, and PHP.',
+    content:
+      '## Overview\nVerify incoming webhook payloads using your secret signature header to ensure payload integrity.',
+  },
+];
