@@ -112,7 +112,7 @@ export async function DELETE(
     if (linkedIssueId) {
       await prisma.issue.delete({
         where: { id: linkedIssueId },
-      }).catch((err) => console.log('Issue cleanup error:', err));
+      }).catch(() => {});
     }
 
     return NextResponse.json({

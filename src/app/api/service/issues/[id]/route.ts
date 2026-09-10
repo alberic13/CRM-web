@@ -28,7 +28,7 @@ export async function DELETE(
     if (ticketId) {
       await prisma.ticket.delete({
         where: { id: ticketId },
-      }).catch((err) => console.log('Ticket cleanup error:', err));
+      }).catch(() => {});
     }
 
     return NextResponse.json({
