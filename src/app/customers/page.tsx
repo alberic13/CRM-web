@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import Sidebar from '@/components/Sidebar';
-import Header from '@/components/Header';
-import { AuthUser } from '@/types/user';
+import AppShell from '@/components/AppShell';
 import styles from './customers.module.css';
 
 interface Customer {
@@ -20,8 +18,6 @@ interface Customer {
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [regionFilter, setRegionFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -49,13 +45,6 @@ export default function CustomersPage() {
       .catch((err) => console.error('Error loading customers:', err));
   }, [search, regionFilter, statusFilter]);
 
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) setUser(data.user);
-      });
-  }, []);
 
   useEffect(() => {
     fetchCustomers();
@@ -117,13 +106,7 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className={styles.layout}>
-      <Sidebar activeMenu="Customers" isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
-
-      <div className={styles.mainContent}>
-        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
-
-        <main className={styles.contentBody}>
+    <AppShell activeMenu="Customers">
           {/* Top Title & Actions */}
           <div className={styles.topRow}>
             <div className={styles.titleGroup}>
@@ -233,8 +216,6 @@ export default function CustomersPage() {
               <div>Showing Page 1 of 1</div>
             </div>
           </div>
-        </main>
-      </div>
 
       {/* Add Customer Modal */}
       {isModalOpen && (
@@ -325,6 +306,6 @@ export default function CustomersPage() {
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }
