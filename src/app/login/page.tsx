@@ -152,7 +152,15 @@ export default function LoginPage() {
         </form>
 
         <p className={styles.footerText}>
-          &copy; 2026 FlowTech CRM Management System.
+          Developed by{' '}
+          <a
+            href="https://github.com/alberic13"
+            target="_blank"
+            rel="nofollow author noopener noreferrer"
+            className="text-stone-300 hover:text-white font-medium transition-colors"
+          >
+            Muchammad Zalde Zahwa Putra
+          </a>
         </p>
       </div>
     </div>

@@ -230,3 +230,16 @@
   font-size: 13px;
   color: #94a3b8;
 }
+
+.footerText a {
+  color: #5d5fef;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.footerText a:hover {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
